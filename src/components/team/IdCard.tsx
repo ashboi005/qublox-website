@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { DitherPortrait } from './DitherPortrait'
-import type { TeamMember } from '@/types/content'
+import type { TeamMember, TeamSettings } from '@/types/content'
 
 /**
  * The crew plate. Structure follows the reference ID card exactly: agency
@@ -10,7 +10,17 @@ import type { TeamMember } from '@/types/content'
  * and a property footer. Every row on it carries real information — the card
  * is a record, not a frame around a headshot.
  */
-export function IdCard({ member, index, total }: { member: TeamMember; index: number; total: number }) {
+export function IdCard({
+  member,
+  index,
+  total,
+  copy,
+}: {
+  member: TeamMember
+  index: number
+  total: number
+  copy: TeamSettings
+}) {
   const accent = `hsl(${member.hue} 78% 62%)`
 
   return (
@@ -28,7 +38,7 @@ export function IdCard({ member, index, total }: { member: TeamMember; index: nu
         {/* ---- agency strip ---------------------------------------- */}
         <div className="flex items-center justify-between border-b pb-2" style={{ borderColor: `${accent}55` }}>
           <span className="text-[0.72rem] font-bold tracking-[0.05em]">
-            <span className="opacity-55">株式</span> QUBLOX
+            <span className="opacity-55">株式</span> {copy.agency}
           </span>
           <span className="label opacity-60">SIGNAL LOW</span>
           <span className="flex gap-[2px]" aria-hidden="true">
@@ -88,8 +98,7 @@ export function IdCard({ member, index, total }: { member: TeamMember; index: nu
           className="mt-3 border-t pt-2.5 text-[0.63rem] leading-[1.7] tracking-[0.02em] uppercase opacity-75"
           style={{ borderColor: `${accent}55` }}
         >
-          Authorisation granted to the above operator to direct, build and ship work on behalf of
-          Qublox, and to argue with anyone who says it cannot be done in the time available.
+          {copy.authorisation}
         </p>
 
         {/* ---- footer ---------------------------------------------- */}
@@ -114,7 +123,7 @@ export function IdCard({ member, index, total }: { member: TeamMember; index: nu
               />
             ))}
           </span>
-          <span className="label opacity-55">PROPERTY OF QUBLOX</span>
+          <span className="label opacity-55">{copy.cardFooter}</span>
         </div>
       </div>
     </article>

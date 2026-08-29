@@ -18,7 +18,7 @@ import { useTrailPath } from '@/components/media/useTrailPath'
 import { sampleAt, type PathSample } from '@/lib/path'
 import { ramp } from '@/lib/range'
 import { useReducedMotion } from '@/lib/useReducedMotion'
-import type { Project } from '@/types/content'
+import type { MediaSettings, Project } from '@/types/content'
 
 /**
  * Media — CH 03, WORK.
@@ -84,7 +84,7 @@ const BOTTOM_PAD = 88
  */
 const CAMERA_HOLD = 0.78
 
-export function Media({ projects }: { projects: Project[] }) {
+export function Media({ projects, copy }: { projects: Project[]; copy: MediaSettings }) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const { stageRef, pathRef, samples, length, d, size, trackWidth } = useTrailPath()
@@ -257,20 +257,20 @@ export function Media({ projects }: { projects: Project[] }) {
         {/* ---- section chrome, fixed to the viewport ------------------- */}
         <div className="edge-x pointer-events-none absolute inset-x-0 top-0 z-40 pt-24">
           <div className="rule-b flex items-baseline justify-between pb-3 text-bone/45">
-            <span className="label">CH 03 — MEDIA</span>
-            <span className="label">2023 — 2025</span>
+            <span className="label">{copy.eyebrow}</span>
+            <span className="label">{copy.yearRange}</span>
           </div>
         </div>
 
         <div className="edge-x pointer-events-none absolute inset-x-0 bottom-0 z-40 pb-6">
           <div className="rule-t flex items-baseline justify-between pt-3 text-bone/45">
             <span className="label">
-              <span className="text-signal">●</span> REC
+              <span className="text-signal">●</span> {copy.recLabel}
             </span>
             <span className="label tabular-nums">
               FRAME {String(frameNumber).padStart(4, '0')} / 0240
             </span>
-            <span className="label hidden sm:inline">24 FPS · 16MM</span>
+            <span className="label hidden sm:inline">{copy.formatLabel}</span>
           </div>
         </div>
       </div>

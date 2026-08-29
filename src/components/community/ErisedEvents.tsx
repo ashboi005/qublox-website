@@ -6,10 +6,16 @@ import { Splat } from './Splat'
 import { ramp } from '@/lib/range'
 import { useReducedMotion } from '@/lib/useReducedMotion'
 import { useScrollRange } from '@/lib/useScrollRange'
-import type { CommunityEvent } from '@/types/content'
+import type { CommunityEvent, CommunitySettings } from '@/types/content'
 
 /** What the room actually runs. Cards deal out as the block comes up. */
-export function ErisedEvents({ events }: { events: CommunityEvent[] }) {
+export function ErisedEvents({
+  events,
+  copy,
+}: {
+  events: CommunityEvent[]
+  copy: CommunitySettings
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.9', 'start 0.3'] })
@@ -19,9 +25,9 @@ export function ErisedEvents({ events }: { events: CommunityEvent[] }) {
       <div className="mx-auto max-w-[76rem] text-erised-ink">
         <div className="flex items-baseline justify-between border-b border-erised-ink/25 pb-3">
           <h2 id="community-heading" className="label">
-            ERISED / EVENTS
+            {copy.eventsEyebrow}
           </h2>
-          <span className="label">OPEN TO ALL</span>
+          <span className="label">{copy.openNote}</span>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -37,9 +43,9 @@ export function ErisedEvents({ events }: { events: CommunityEvent[] }) {
         </div>
 
         <p className="mt-10 max-w-[52ch] font-round text-[1.05rem] leading-relaxed">
-          Nothing is ticketed and nothing is filmed.{' '}
+          {copy.closing}{' '}
           <a href="/#contact" className="underline decoration-2 underline-offset-4 hover:text-erised-blue">
-            Ask to be on the list.
+            {copy.closingLinkLabel}
           </a>
         </p>
       </div>

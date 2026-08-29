@@ -10,6 +10,8 @@ import type { Service, SiteSettings } from '@/types/content'
  * one quiet room between the CRT and the blackout.
  */
 export function About({ settings, services }: { settings: SiteSettings; services: Service[] }) {
+  const about = settings.about
+
   return (
     <section
       id="about"
@@ -20,8 +22,8 @@ export function About({ settings, services }: { settings: SiteSettings; services
     >
       <div className="mx-auto max-w-[76rem]">
         <div className="rule-t flex items-baseline justify-between pt-4 text-ink/45">
-          <span className="label">CH 02 — STUDIO</span>
-          <span className="label">WHAT WE ARE</span>
+          <span className="label">{about.eyebrow}</span>
+          <span className="label">{about.kicker}</span>
         </div>
 
         <div className="mt-[8vh] grid gap-x-16 gap-y-12 md:grid-cols-12">
@@ -30,14 +32,14 @@ export function About({ settings, services }: { settings: SiteSettings; services
               About Qublox
             </h2>
             <RevealWords
-              text={settings.aboutLead}
-              highlights={settings.aboutHighlights}
+              text={about.lead}
+              highlights={about.highlights}
               className="max-w-[18ch] text-[clamp(2rem,5.2vw,4.25rem)] leading-[1.16] font-medium tracking-[-0.025em] text-ink"
             />
           </div>
 
           <div className="space-y-6 self-end md:col-span-4">
-            {settings.aboutBody.map((paragraph, index) => (
+            {about.body.map((paragraph: string, index: number) => (
               <p key={index} className="text-[0.975rem] leading-[1.75] text-ink/70">
                 {paragraph}
               </p>
@@ -53,7 +55,7 @@ export function About({ settings, services }: { settings: SiteSettings; services
             from={62}
             to={104}
           >
-            What we make
+            {about.servicesTitle}
           </StretchHeading>
 
           <dl className="mt-10">

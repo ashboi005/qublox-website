@@ -14,9 +14,8 @@ import type { SiteSettings } from '@/types/content'
 
 type Status = { kind: 'idle' | 'sending' | 'sent' } | { kind: 'error'; message: string }
 
-const BUDGETS = ['Under ₹5L', '₹5–15L', '₹15–40L', '₹40L+', 'Not sure yet']
-
 export function Contact({ settings }: { settings: SiteSettings }) {
+  const copy = settings.contact
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -57,18 +56,18 @@ export function Contact({ settings }: { settings: SiteSettings }) {
           style={{ borderColor: 'rgba(30,30,32,0.25)' }}
         >
           <h2 id="contact-heading" className="label">
-            CH 07 — CONTACT
+            {copy.eyebrow}
           </h2>
-          <span className="label">REPLY WITHIN 2 WORKING DAYS</span>
+          <span className="label">{copy.replyNote}</span>
         </div>
 
         <div className="mt-10 grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
             <StretchHeading className="text-[clamp(2.4rem,7vw,5rem)]" from={64} to={112}>
-              Start a signal
+              {copy.title}
             </StretchHeading>
             <p className="mt-6 max-w-[38ch] text-[0.98rem] leading-[1.75] opacity-80">
-              {settings.contactLead}
+              {copy.lead}
             </p>
             <a
               href={`mailto:${settings.email}`}
@@ -84,11 +83,10 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 className="border-2 border-erised-ink bg-erised-ink p-8 text-erised-yellow"
                 role="status"
               >
-                <p className="font-round text-[1.6rem] leading-tight font-semibold">Message received.</p>
-                <p className="mt-2 text-[0.95rem] leading-relaxed opacity-80">
-                  It went straight to a person, not a queue. You will hear back within two working
-                  days.
+                <p className="font-round text-[1.6rem] leading-tight font-semibold">
+                  {copy.successTitle}
                 </p>
+                <p className="mt-2 text-[0.95rem] leading-relaxed opacity-80">{copy.successBody}</p>
               </div>
             ) : (
               <form onSubmit={onSubmit} className="space-y-5" noValidate>
@@ -110,7 +108,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                       className="w-full appearance-none border-2 border-erised-ink bg-transparent px-3 py-2.5 text-[0.95rem] outline-none focus-visible:bg-erised-ink focus-visible:text-erised-yellow"
                     >
                       <option value="">Select a range</option>
-                      {BUDGETS.map((budget) => (
+                      {copy.budgets.map((budget) => (
                         <option key={budget} value={budget}>
                           {budget}
                         </option>

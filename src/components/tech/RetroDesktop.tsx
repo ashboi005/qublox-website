@@ -2,6 +2,7 @@
 
 import { motion, useTransform, type MotionValue } from 'motion/react'
 import { useScrollRange } from '@/lib/useScrollRange'
+import type { MachineSettings } from '@/types/content'
 
 /**
  * The desktop the BIOS boots into.
@@ -43,10 +44,12 @@ export const BEATS = {
   listing: [0.88, 0.99] as const,
 }
 
-const ICONS = [
-  { label: 'CAPABILITIES.TXT', kind: 'doc' as const, x: 1.5, y: 9 },
-  { label: 'QUBLOX.EXE', kind: 'app' as const, x: 1.5, y: 31 },
-  { label: 'REEL_2025.AVI', kind: 'film' as const, x: 1.5, y: 53 },
+/** Where each icon sits, in order. The labels themselves come from the CMS. */
+const ICON_SLOTS = [
+  { x: 1.5, y: 9 },
+  { x: 1.5, y: 31 },
+  { x: 1.5, y: 53 },
+  { x: 1.5, y: 75 },
 ]
 
 /** Cursor waypoints, as percentages of the desktop. */
@@ -59,11 +62,16 @@ const WAYPOINTS = {
 
 export function RetroDesktop({
   progress,
+  machine,
   children,
 }: {
   progress: MotionValue<number>
+  machine: MachineSettings
   children: React.ReactNode
 }) {
+  const icons = machine.icons.slice(0, ICON_SLOTS.length)
+  // The application icon is the one the cursor opens; second if there is one.
+  const launched = Math.min(1, icons.length - 1)
   const paint = useScrollRange(progress, [...BEATS.paint], [0, 1])
 
   // The cursor's whole route as one interpolation across four waypoints, so it
@@ -117,11 +125,11 @@ export function RetroDesktop({
         backgroundSize: '4px 4px',
       }}
     >
-      {ICONS.map((icon, index) => (
+      {icons.map((icon, index) => (
         <DesktopIcon
           key={icon.label}
-          icon={icon}
-          highlight={index === 1 ? selectedBg : undefined}
+          icon={{ ...icon, ...ICON_SLOTS[index]! }}
+          highlight={index === launched ? selectedBg : undefined}
         />
       ))}
 
@@ -146,7 +154,9 @@ export function RetroDesktop({
       >
         <Bevel>
           <div className="flex items-center justify-between bg-dos-blue px-2 py-1">
-            <span className="font-mono text-[0.68rem] tracking-[0.1em] text-dos-white">QUBLOX.EXE</span>
+            <span className="font-mono text-[0.68rem] tracking-[0.1em] text-dos-white">
+              {machine.errorTitle}
+            </span>
             <span className="border border-[#5a5a5a] bg-[#c0c0c0] px-1.5 font-mono text-[0.6rem] leading-none text-black">
               ×
             </span>
@@ -156,8 +166,11 @@ export function RetroDesktop({
               !
             </span>
             <div className="font-mono text-[0.72rem] leading-[1.7] text-black">
-              <p>Cannot enumerate capabilities from the shell.</p>
-              <p className="mt-1 opacity-70">Read CAPABILITIES.TXT directly instead?</p>
+              {machine.errorLines.map((line, index) => (
+                <p key={line} className={index === 0 ? undefined : 'mt-1 opacity-70'}>
+                  {line}
+                </p>
+              ))}
             </div>
           </div>
           <div className="flex justify-center gap-2 pb-4">
@@ -175,7 +188,7 @@ export function RetroDesktop({
           className="border border-[#8a8a8a] px-2 py-0.5 font-mono text-[0.62rem] text-black"
           style={{ opacity: windowOpacity }}
         >
-          QUBLOX.EXE
+          {machine.errorTitle}
         </motion.span>
         <span className="ml-auto border border-[#8a8a8a] px-2 py-0.5 font-mono text-[0.62rem] tabular-nums text-black">
           04:12
@@ -204,7 +217,7 @@ function DesktopIcon({
   icon,
   highlight,
 }: {
-  icon: (typeof ICONS)[number]
+  icon: { label: string; kind: 'doc' | 'app' | 'film'; x: number; y: number }
   highlight?: MotionValue<string>
 }) {
   return (

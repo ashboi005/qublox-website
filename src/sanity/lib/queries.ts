@@ -8,15 +8,18 @@ import { groq } from 'next-sanity'
 
 export const settingsQuery = groq`*[_type == "siteSettings"][0]{
   tagline,
-  aboutLead,
-  aboutHighlights[]{ word, color },
-  aboutBody,
-  techIntro,
-  communityLead,
-  contactLead,
+  channels[]{ id, label, name },
   email,
   location,
-  socials[]{ label, href }
+  socials[]{ label, href },
+  hero{ marquee, serial, established, scrollCue, tvBrand, tvModel, tvChannel },
+  about{ eyebrow, kicker, lead, highlights[]{ word, color }, body, servicesTitle },
+  media{ eyebrow, yearRange, recLabel, formatLabel },
+  machine{ bootLines, command, fileName, intro, errorTitle, errorLines, icons[]{ label, kind } },
+  team{ eyebrow, note, scanner, authorisation, agency, cardFooter },
+  community{ lead, eventsEyebrow, openNote, closing, closingLinkLabel },
+  contact{ eyebrow, replyNote, title, lead, budgets, successTitle, successBody },
+  footer{ serial, backToTop }
 }`
 
 export const servicesQuery = groq`*[_type == "service"] | order(order asc){

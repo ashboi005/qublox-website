@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import type { Channel } from '@/types/content'
 import { ScrambleText } from '@/components/ui/ScrambleText'
 
 /**
@@ -9,22 +10,6 @@ import { ScrambleText } from '@/components/ui/ScrambleText'
  * only navigation on the page. It sits in difference blend mode so it stays
  * legible as the ground goes bone → void → yellow without ever re-colouring.
  */
-
-/**
- * Keyed by the `data-channel` each section declares. Deriving the channel from
- * a fraction of total scroll was wrong the moment the sections stopped being
- * the same height — and they never were.
- */
-const CHANNELS: Record<string, { label: string; name: string }> = {
-  hero: { label: 'CH 01', name: 'SIGNAL' },
-  about: { label: 'CH 02', name: 'STUDIO' },
-  work: { label: 'CH 03', name: 'MEDIA' },
-  tech: { label: 'CH 04', name: 'TECH' },
-  team: { label: 'CH 05', name: 'CREW' },
-  contact: { label: 'CH 06', name: 'CONTACT' },
-}
-
-const ORDER = Object.keys(CHANNELS)
 
 /**
  * Two destinations. Everything else on this page is reached by scrolling
@@ -37,7 +22,7 @@ const NAV = [
   { href: '#contact', label: 'Contact', home: true },
 ]
 
-export function Header() {
+export function Header({ channels = [] }: { channels?: Channel[] }) {
   const pathname = usePathname()
   const onHome = pathname === '/'
   // Null until the first measurement, and on any page that has no channels at
@@ -88,10 +73,11 @@ export function Header() {
     }
   }, [])
 
-  const channel = current ? CHANNELS[current] : undefined
+  const index = current ? channels.findIndex((entry) => entry.id === current) : -1
+  const channel = index >= 0 ? channels[index] : undefined
   // Signal strength climbs as you get further into the broadcast. An
   // instrument, not a progress bar — but it should still mean something.
-  const signal = current ? 1 + Math.min(4, ORDER.indexOf(current)) : 0
+  const signal = index >= 0 ? 1 + Math.min(4, index) : 0
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[100] mix-blend-difference">

@@ -74,6 +74,35 @@ a half-filled Studio can never leave the site blank.
 Document types: `siteSettings`, `service`, `project`, `techModule`,
 `teamMember`, `communityEvent`.
 
+### What's editable
+
+Effectively all standing copy. `siteSettings` is grouped into Studio tabs that
+match the sections, so an editor opens the tab for the thing they are looking
+at rather than scrolling one flat list where `eyebrow` and `lead` each appear
+six times:
+
+| Tab | Covers |
+|---|---|
+| General | Tagline, email, location, socials, the header's channel tuner, footer serial |
+| CH 01 Hero | **The wall of type behind the set**, instrument strip, scroll cue, the plates printed on the television itself |
+| CH 02 About | Eyebrows, lead line, highlighted words, paragraphs, **the "What we make" heading** |
+| CH 03 Media | Eyebrow, year range, the REC and format labels on the footer strip |
+| CH 04 Tech | BIOS boot lines, the typed command, file name, desktop icons, the error dialog |
+| CH 05 Crew | Eyebrows, scanner label, and the authorisation paragraph printed on every ID card |
+| CH 06 Contact | Eyebrows, heading, lead, budget options, the after-sending message |
+| ERISED | Lead, event eyebrows, closing line |
+
+The hero's wall of type is its own field rather than being derived from the
+services list, because it is tuned for rhythm — short, loud phrases read at a
+glance while scrolling — and that is a different job from describing a service.
+
+**Nothing is required.** Settings deep-merge over the bundled content: an
+empty string, an empty array or an absent group falls back rather than
+blanking the page, so a half-filled Studio is always safe. Arrays replace
+wholesale rather than merging element-wise — a list of boot lines is one
+editorial decision, and splicing CMS entries into bundled ones would produce
+nonsense.
+
 ## Contact form
 
 `POST /api/contact` → nodemailer → your Gmail. Fill in `.env.local`:

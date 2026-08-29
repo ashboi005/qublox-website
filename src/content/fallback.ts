@@ -8,78 +8,173 @@ import type { SiteContent } from '@/types/content'
 export const fallbackContent: SiteContent = {
   settings: {
     tagline: 'A production house and a software studio, under one roof.',
-    aboutLead: 'Qublox makes the film and builds the thing the film is about.',
-    // The two verbs are the whole proposition, so they get the two brand
-    // colours; "film" gets the marker because it is the word people arrive
-    // looking for.
-    aboutHighlights: [
-      { word: 'makes', color: 'red' },
-      { word: 'builds', color: 'blue' },
-      { word: 'film', color: 'yellow' },
+    channels: [
+      { id: 'hero', label: 'CH 01', name: 'SIGNAL' },
+      { id: 'about', label: 'CH 02', name: 'STUDIO' },
+      { id: 'work', label: 'CH 03', name: 'MEDIA' },
+      { id: 'tech', label: 'CH 04', name: 'TECH' },
+      { id: 'team', label: 'CH 05', name: 'CREW' },
+      { id: 'contact', label: 'CH 06', name: 'CONTACT' },
     ],
-    aboutBody: [
-      'Most work needs both halves and gets them from two suppliers who have never met. A campaign arrives with no product behind it; a product ships with a screen recording for a launch film. We run a shoot floor and an engineering team in the same building, so the ad, the short film and the software it is selling are made by people who talk to each other daily.',
-      'We do not do social media management. We direct, shoot, cut and grade — and we write production software, custom platforms and AI agents that actually go live.',
-    ],
-    techIntro:
-      'Everything below runs on real client work, in production, today. No lab demos.',
-    techModules: [
-      {
-        _id: 'mod-software',
-        code: 'SWE',
-        name: 'CUSTOM SOFTWARE',
-        status: 'ONLINE',
-        lines: [
-          'Bespoke platforms, internal tools, and the systems under them.',
-          'TypeScript, Go, Postgres. Deployed on infrastructure we hand over.',
-          'Built to be maintained by your team, not held hostage by ours.',
-        ],
-      },
-      {
-        _id: 'mod-agents',
-        code: 'AGT',
-        name: 'AI AGENTS',
-        status: 'ONLINE',
-        lines: [
-          'Agentic systems that do a defined job end to end and log what they did.',
-          'Retrieval, tool use, evaluation harnesses, human review where it matters.',
-          'Scoped to a measurable outcome — never a chatbot for its own sake.',
-        ],
-      },
-      {
-        _id: 'mod-production',
-        code: 'PRD',
-        name: 'FILM PRODUCTION',
-        status: 'ONLINE',
-        lines: [
-          'Development through delivery: script, board, crew, location, shoot.',
-          'Large-format and anamorphic capture, on-set colour management.',
-          'Short films, brand films and commercials, at broadcast spec.',
-        ],
-      },
-      {
-        _id: 'mod-post',
-        code: 'PST',
-        name: 'POST + VFX',
-        status: 'STABLE',
-        lines: [
-          'Offline, online, grade and finish under one schedule.',
-          'Houdini and Nuke for anything the camera cannot be talked into.',
-          'Delivered in every ratio and codec the media plan actually needs.',
-        ],
-      },
-    ],
-    communityLead:
-      'ERISED is our open room. Once a month we clear the studio, put something unfinished on the projector, and argue about it.',
-    contactLead:
-      'Tell us what you are making — a film, a platform, or both. We answer every message ourselves, usually within two working days.',
     email: 'qbloxhq@gmail.com',
+    location: 'Amritsar, IN — 31.63°N 74.87°E',
     socials: [
       { label: 'Instagram', href: 'https://instagram.com' },
       { label: 'YouTube', href: 'https://youtube.com' },
       { label: 'LinkedIn', href: 'https://linkedin.com' },
     ],
-    location: 'Amritsar, IN — 31.63°N 74.87°E',
+
+    hero: {
+      marquee: [
+        'SHORT FILMS',
+        'ADS + CAMPAIGNS',
+        'CUSTOM SOFTWARE',
+        'AI AGENTS',
+        'POST + MOTION',
+        'INTERACTIVE',
+      ],
+      serial: 'NDFR-00 NMB 00001',
+      established: 'EST. 2025',
+      scrollCue: '↓ SCROLL TO TUNE',
+      tvBrand: 'QUBLOX',
+      tvModel: 'MODEL QX-CRT · SOLID STATE · 1984',
+      tvChannel: 'VHF 01',
+    },
+
+    about: {
+      eyebrow: 'CH 02 — STUDIO',
+      kicker: 'WHAT WE ARE',
+      lead: 'Qublox makes the film and builds the thing the film is about.',
+      // The two verbs are the whole proposition, so they get the two brand
+      // colours; "film" gets the marker because it is the word people arrive
+      // looking for.
+      highlights: [
+        { word: 'makes', color: 'red' },
+        { word: 'builds', color: 'blue' },
+        { word: 'film', color: 'yellow' },
+      ],
+      body: [
+        'Most work needs both halves and gets them from two suppliers who have never met. A campaign arrives with no product behind it; a product ships with a screen recording for a launch film. We run a shoot floor and an engineering team in the same building, so the ad, the short film and the software it is selling are made by people who talk to each other daily.',
+        'We do not do social media management. We direct, shoot, cut and grade — and we write production software, custom platforms and AI agents that actually go live.',
+      ],
+      servicesTitle: 'What we make',
+    },
+
+    media: {
+      eyebrow: 'CH 03 — MEDIA',
+      yearRange: '2023 — 2025',
+      recLabel: 'REC',
+      formatLabel: '24 FPS · 16MM',
+    },
+
+    machine: {
+      bootLines: [
+        'QUBLOX BIOS v2.6.1 — (C) 1984, 2026',
+        '',
+        'CPU ............. QX-9 @ 4.77 MHz      [ OK ]',
+        'MEMORY .......... 655,360 BYTES        [ OK ]',
+        'DISPLAY ......... CGA 640x200          [ OK ]',
+        'TAPE DECK ....... NOT PRESENT          [ -- ]',
+        '',
+        'MOUNTING /dev/phosphor ................. DONE',
+        'LOADING SYSTEMS MANIFEST ............... DONE',
+        '',
+        'STARTING QUBLOX/DOS ...',
+      ],
+      command: 'type capabilities.txt',
+      fileName: 'CAPABILITIES.TXT',
+      intro: 'Everything below runs on real client work, in production, today. No lab demos.',
+      errorTitle: 'QUBLOX.EXE',
+      errorLines: [
+        'Cannot enumerate capabilities from the shell.',
+        'Read CAPABILITIES.TXT directly instead?',
+      ],
+      icons: [
+        { label: 'CAPABILITIES.TXT', kind: 'doc' },
+        { label: 'QUBLOX.EXE', kind: 'app' },
+        { label: 'REEL_2025.AVI', kind: 'film' },
+      ],
+      modules: [
+        {
+          _id: 'mod-software',
+          code: 'SWE',
+          name: 'CUSTOM SOFTWARE',
+          status: 'ONLINE',
+          lines: [
+            'Bespoke platforms, internal tools, and the systems under them.',
+            'TypeScript, Go, Postgres. Deployed on infrastructure we hand over.',
+            'Built to be maintained by your team, not held hostage by ours.',
+          ],
+        },
+        {
+          _id: 'mod-agents',
+          code: 'AGT',
+          name: 'AI AGENTS',
+          status: 'ONLINE',
+          lines: [
+            'Agentic systems that do a defined job end to end and log what they did.',
+            'Retrieval, tool use, evaluation harnesses, human review where it matters.',
+            'Scoped to a measurable outcome — never a chatbot for its own sake.',
+          ],
+        },
+        {
+          _id: 'mod-production',
+          code: 'PRD',
+          name: 'FILM PRODUCTION',
+          status: 'ONLINE',
+          lines: [
+            'Development through delivery: script, board, crew, location, shoot.',
+            'Large-format and anamorphic capture, on-set colour management.',
+            'Short films, brand films and commercials, at broadcast spec.',
+          ],
+        },
+        {
+          _id: 'mod-post',
+          code: 'PST',
+          name: 'POST + VFX',
+          status: 'STABLE',
+          lines: [
+            'Offline, online, grade and finish under one schedule.',
+            'Houdini and Nuke for anything the camera cannot be talked into.',
+            'Delivered in every ratio and codec the media plan actually needs.',
+          ],
+        },
+      ],
+    },
+
+    team: {
+      eyebrow: 'CH 05 — CREW',
+      note: 'IDENTIFICATION ON DEMAND',
+      scanner: 'NEXUS 9 SRS',
+      authorisation:
+        'Authorisation granted to the above operator to direct, build and ship work on behalf of Qublox, and to argue with anyone who says it cannot be done in the time available.',
+      agency: 'QUBLOX',
+      cardFooter: 'PROPERTY OF QUBLOX',
+    },
+
+    community: {
+      lead: 'ERISED is our open room. Once a month we clear the studio, put something unfinished on the projector, and argue about it.',
+      eventsEyebrow: 'ERISED / EVENTS',
+      openNote: 'OPEN TO ALL',
+      closing: 'Nothing is ticketed and nothing is filmed.',
+      closingLinkLabel: 'Ask to be on the list.',
+    },
+
+    contact: {
+      eyebrow: 'CH 06 — CONTACT',
+      replyNote: 'REPLY WITHIN 2 WORKING DAYS',
+      title: 'Start a signal',
+      lead: 'Tell us what you are making — a film, a platform, or both. We answer every message ourselves, usually within two working days.',
+      budgets: ['Under ₹5L', '₹5–15L', '₹15–40L', '₹40L+', 'Not sure yet'],
+      successTitle: 'Message received.',
+      successBody:
+        'It went straight to a person, not a queue. You will hear back within two working days.',
+    },
+
+    footer: {
+      serial: 'IDENTIFICATION NUMBER 06746HDFGFS634523 64',
+      backToTop: '↑ BACK TO CH 01',
+    },
   },
 
   services: [

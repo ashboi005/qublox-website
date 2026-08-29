@@ -18,10 +18,12 @@ const MENU = ['File', 'Edit', 'Search', 'Run', 'Compile', 'Debug', 'Options', 'W
 export function TurboWindow({
   command,
   typed,
+  fileName,
   children,
 }: {
   command: string
   typed: number
+  fileName: string
   children: React.ReactNode
 }) {
   return (
@@ -42,7 +44,7 @@ export function TurboWindow({
 
         <div className="relative m-1 flex h-[calc(100%-0.5rem)] flex-col border-2 border-double border-dos-grey/60 px-3 pt-4 sm:px-6">
           <span className="absolute -top-[0.7em] left-5 bg-dos-blue px-2 text-[0.66rem] tracking-[0.12em] text-dos-yellow">
-            ═ CAPABILITIES.TXT ═
+            ═ {fileName} ═
           </span>
           <span className="absolute -top-[0.7em] right-5 bg-dos-blue px-2 text-[0.66rem]">[■]</span>
 

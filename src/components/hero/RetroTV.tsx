@@ -11,7 +11,17 @@
  * glass carries a bulge highlight, which is what separates a CRT from a
  * rectangle with scanlines on it.
  */
-export function RetroTV({ children }: { children: React.ReactNode }) {
+export function RetroTV({
+  children,
+  brand,
+  model,
+  channel,
+}: {
+  children: React.ReactNode
+  brand: string
+  model: string
+  channel: string
+}) {
   return (
     <div className="relative w-[min(80vw,46rem)]">
       {/* ---- antenna --------------------------------------------------- */}
@@ -132,7 +142,7 @@ export function RetroTV({ children }: { children: React.ReactNode }) {
                 className="block font-mono text-[0.42rem] leading-none tracking-[0.14em] text-[#ffb000]"
                 style={{ textShadow: '0 0 6px rgba(255,176,0,0.85)' }}
               >
-                VHF 01
+                {channel}
               </span>
             </div>
 
@@ -158,10 +168,10 @@ export function RetroTV({ children }: { children: React.ReactNode }) {
         {/* ---- maker's plate ------------------------------------------- */}
         <div className="mt-[2%] flex items-center justify-between px-[1.5%]">
           <span className="font-mono text-[0.55rem] tracking-[0.2em] text-[#a49a8b]/70 uppercase">
-            Qublox
+            {brand}
           </span>
           <span className="font-mono text-[0.5rem] tracking-[0.16em] text-[#a49a8b]/45 uppercase">
-            Model QX-CRT · Solid State · 1984
+            {model}
           </span>
         </div>
       </div>

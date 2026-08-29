@@ -26,23 +26,11 @@ import type { SiteSettings } from '@/types/content'
  * same section.
  */
 
-export const BOOT = [
-  'QUBLOX BIOS v2.6.1 — (C) 1984, 2026',
-  '',
-  'CPU ............. QX-9 @ 4.77 MHz      [ OK ]',
-  'MEMORY .......... 655,360 BYTES        [ OK ]',
-  'DISPLAY ......... CGA 640x200          [ OK ]',
-  'TAPE DECK ....... NOT PRESENT          [ -- ]',
-  '',
-  'MOUNTING /dev/phosphor ................. DONE',
-  'LOADING SYSTEMS MANIFEST ............... DONE',
-  '',
-  'STARTING QUBLOX/DOS ...',
-]
-
-const COMMAND = 'type capabilities.txt'
 
 export function Machine({ settings }: { settings: SiteSettings }) {
+  const machine = settings.machine
+  const BOOT = machine.bootLines
+  const COMMAND = machine.command
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
@@ -78,9 +66,9 @@ export function Machine({ settings }: { settings: SiteSettings }) {
   })
 
   const [revealed, setRevealed] = useState(0)
-  const listing = useScrollRange(scrollYProgress, [...BEATS.listing], [0, settings.techModules.length])
+  const listing = useScrollRange(scrollYProgress, [...BEATS.listing], [0, machine.modules.length])
   useMotionValueEvent(listing, 'change', (value) => {
-    const next = Math.floor(Math.min(settings.techModules.length, Math.max(0, value)))
+    const next = Math.floor(Math.min(machine.modules.length, Math.max(0, value)))
     if (next !== revealed) setRevealed(next)
   })
 
@@ -95,8 +83,8 @@ export function Machine({ settings }: { settings: SiteSettings }) {
         aria-labelledby="tech-heading"
       >
         <div className="mx-auto max-w-[80rem]">
-          <TurboWindow command={COMMAND} typed={COMMAND.length}>
-            <Manifest settings={settings} revealed={settings.techModules.length} />
+          <TurboWindow command={COMMAND} typed={COMMAND.length} fileName={machine.fileName}>
+            <Manifest settings={settings} revealed={machine.modules.length} />
           </TurboWindow>
         </div>
       </section>
@@ -156,8 +144,8 @@ export function Machine({ settings }: { settings: SiteSettings }) {
           </motion.pre>
 
           {/* the operating system, painting over the boot screen */}
-          <RetroDesktop progress={scrollYProgress}>
-            <TurboWindow command={COMMAND} typed={typed}>
+            <RetroDesktop progress={scrollYProgress} machine={machine}>
+            <TurboWindow command={COMMAND} typed={typed} fileName={machine.fileName}>
               <Manifest settings={settings} revealed={revealed} />
             </TurboWindow>
           </RetroDesktop>

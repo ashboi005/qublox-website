@@ -42,9 +42,9 @@ export function Footer({ settings }: { settings: SiteSettings }) {
 
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-erised-ink/25 pt-4">
           <span className="label opacity-55">© {new Date().getFullYear()} QUBLOX — ALL RIGHTS RESERVED</span>
-          <span className="label opacity-55">IDENTIFICATION NUMBER 06746HDFGFS634523 64</span>
+          <span className="label opacity-55">{settings.footer.serial}</span>
           <a href="#hero" className="label underline-offset-4 opacity-70 hover:underline hover:opacity-100">
-            ↑ BACK TO CH 01
+            {settings.footer.backToTop}
           </a>
         </div>
       </div>

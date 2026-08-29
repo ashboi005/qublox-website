@@ -6,7 +6,7 @@ import { useRef } from 'react'
 import { IdCard } from '@/components/team/IdCard'
 import { ramp } from '@/lib/range'
 import { useReducedMotion } from '@/lib/useReducedMotion'
-import type { TeamMember } from '@/types/content'
+import type { TeamMember, TeamSettings } from '@/types/content'
 
 /**
  * Team — CH 05, CREW.
@@ -32,7 +32,7 @@ const ROUTES = [
   { from: [-22, -20], to: [22, 16], tilt: [-14, -58, 20], exit: [16, 50, -16] },
   { from: [28, 22], to: [-14, -18], tilt: [24, 62, -18], exit: [-20, -46, 14] },
 ]
-export function Team({ team }: { team: TeamMember[] }) {
+export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings }) {
   const ref = useRef<HTMLElement>(null)
   const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
@@ -40,10 +40,10 @@ export function Team({ team }: { team: TeamMember[] }) {
   if (reduced) {
     return (
       <section id="team" data-ground="void" data-channel="team" className="edge-x py-[12vh]" aria-labelledby="team-heading">
-        <Heading />
+        <Heading copy={copy} />
         <div className="mx-auto mt-12 flex max-w-[76rem] flex-wrap justify-center gap-8">
           {team.map((member, index) => (
-            <IdCard key={member._id} member={member} index={index} total={team.length} />
+            <IdCard key={member._id} member={member} index={index} total={team.length} copy={copy} />
           ))}
         </div>
       </section>
@@ -65,7 +65,7 @@ export function Team({ team }: { team: TeamMember[] }) {
         style={{ perspective: '1400px' }}
       >
         <div className="edge-x pointer-events-none absolute inset-x-0 top-0 z-40 pt-24">
-          <Heading />
+          <Heading copy={copy} />
         </div>
 
         {team.map((member, index) => (
@@ -75,13 +75,14 @@ export function Team({ team }: { team: TeamMember[] }) {
             index={index}
             total={team.length}
             progress={scrollYProgress}
+            copy={copy}
           />
         ))}
 
         {/* scanner readout at the foot of the frame */}
         <div className="edge-x pointer-events-none absolute inset-x-0 bottom-0 z-40 pb-6">
           <div className="rule-t flex items-baseline justify-between pt-3 text-bone/40">
-            <span className="label">NEXUS 9 SRS</span>
+            <span className="label">{copy.scanner}</span>
             <span className="label">{team.length} RECORDS ON FILE</span>
           </div>
         </div>
@@ -90,13 +91,13 @@ export function Team({ team }: { team: TeamMember[] }) {
   )
 }
 
-function Heading() {
+function Heading({ copy }: { copy: TeamSettings }) {
   return (
     <div className="rule-b mx-auto flex max-w-[76rem] items-baseline justify-between pb-3 text-bone/45">
       <h2 id="team-heading" className="label">
-        CH 05 — CREW
+        {copy.eyebrow}
       </h2>
-      <span className="label">IDENTIFICATION ON DEMAND</span>
+      <span className="label">{copy.note}</span>
     </div>
   )
 }
@@ -106,11 +107,13 @@ function FlyingCard({
   index,
   total,
   progress,
+  copy,
 }: {
   member: TeamMember
   index: number
   total: number
   progress: MotionValue<number>
+  copy: TeamSettings
 }) {
   const slice = 1 / total
   const start = index * slice
@@ -151,7 +154,7 @@ function FlyingCard({
       className="absolute"
       style={{ z, x, y, rotateX, rotateY, rotateZ, opacity, transformStyle: 'preserve-3d' }}
     >
-      <IdCard member={member} index={index} total={total} />
+      <IdCard member={member} index={index} total={total} copy={copy} />
     </motion.div>
   )
 }

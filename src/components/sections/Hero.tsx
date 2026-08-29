@@ -6,7 +6,7 @@ import { useRef } from 'react'
 import { ChannelSplitLogo } from '@/components/hero/ChannelSplitLogo'
 import { RetroTV } from '@/components/hero/RetroTV'
 import { ScrollLines } from '@/components/hero/ScrollLines'
-import type { Service, SiteSettings } from '@/types/content'
+import type { SiteSettings } from '@/types/content'
 
 /**
  * Hero — CH 01, SIGNAL.
@@ -16,14 +16,16 @@ import type { Service, SiteSettings } from '@/types/content'
  * thing only: the mark, broadcast through the tube.
  */
 
-export function Hero({ settings, services }: { settings: SiteSettings; services: Service[] }) {
+export function Hero({ settings }: { settings: SiteSettings }) {
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
   })
 
-  const lines = services.map((service) => service.marquee)
+  const hero = settings.hero
+  // Falls back to the services' own short forms if the wall is left empty.
+  const lines = hero.marquee
 
   const tvOpacity = useScrollRange(scrollYProgress, [0, 0.72, 1], [1, 1, 0])
   const chromeOpacity = useScrollRange(scrollYProgress, [0, 0.35], [1, 0])
@@ -45,7 +47,7 @@ export function Hero({ settings, services }: { settings: SiteSettings; services:
 
         {/* ---- the set --------------------------------------------------- */}
         <motion.div className="relative z-10" style={{ opacity: tvOpacity }}>
-          <RetroTV>
+          <RetroTV brand={hero.tvBrand} model={hero.tvModel} channel={hero.tvChannel}>
             <div className="absolute inset-0 z-10 grid place-items-center p-[6%]">
               <div className="h-full w-auto" style={{ aspectRatio: '1 / 1' }}>
                 <ChannelSplitLogo />
@@ -61,9 +63,9 @@ export function Hero({ settings, services }: { settings: SiteSettings; services:
         >
           {/* bottom instrument strip, lifted from the cassette plate */}
           <div className="edge-x rule-t absolute inset-x-0 bottom-0 flex items-center justify-between py-4 text-ink/45">
-            <span className="label">NDFR-00 NMB 00001</span>
+            <span className="label">{hero.serial}</span>
             <span className="label hidden sm:inline">{settings.location}</span>
-            <span className="label">EST. 2025</span>
+            <span className="label">{hero.established}</span>
           </div>
 
           {/* scroll cue */}
@@ -73,7 +75,7 @@ export function Hero({ settings, services }: { settings: SiteSettings; services:
               animate={{ y: [0, 5, 0] }}
               transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
             >
-              ↓ SCROLL TO TUNE
+              {hero.scrollCue}
             </motion.span>
           </div>
         </motion.div>

@@ -42,9 +42,9 @@ export function ErisedPage({
       <Grain />
 
       <main className="bg-erised-yellow">
-        <ErisedIntro progress={progress} lead={settings.communityLead} />
+        <ErisedIntro progress={progress} lead={settings.community.lead} />
         <div id="events">
-          <ErisedEvents events={events} />
+          <ErisedEvents events={events} copy={settings.community} />
         </div>
       </main>
 

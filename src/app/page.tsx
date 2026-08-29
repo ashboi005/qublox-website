@@ -23,22 +23,22 @@ export default async function Page() {
       </a>
 
       <BackgroundController />
-      <Header />
+      <Header channels={settings.channels} />
       <CubeCursor />
       <Grain />
       <Vignette />
 
       <main id="main">
         {/* CH 01 — the signal arrives */}
-        <Hero settings={settings} services={services} />
+        <Hero settings={settings} />
         {/* CH 02 — the caption */}
         <About settings={settings} services={services} />
         {/* CH 03 — the camera runs */}
-        <Media projects={projects} />
+        <Media projects={projects} copy={settings.media} />
         {/* CH 04 — the machine, cold start to running */}
         <Machine settings={settings} />
         {/* CH 05 — the crew */}
-        <Team team={team} />
+        <Team team={team} copy={settings.team} />
         {/* CH 06 — the reply */}
         <Contact settings={settings} />
       </main>

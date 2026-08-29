@@ -21,11 +21,11 @@ export function Manifest({ settings, revealed }: { settings: SiteSettings; revea
         What Qublox can do
       </h2>
       <p className="mb-3 max-w-[74ch] text-[clamp(0.66rem,1.05vw,0.8rem)] leading-[1.7]">
-        {settings.techIntro}
+        {settings.machine.intro}
       </p>
 
       <div>
-        {settings.techModules.map((module, index) => (
+        {settings.machine.modules.map((module, index) => (
           <motion.div
             key={module._id}
             className="border-t border-dos-grey/25 py-2 first:border-t-0 first:pt-0"
