@@ -9,6 +9,7 @@ import { groq } from 'next-sanity'
 export const settingsQuery = groq`*[_type == "siteSettings"][0]{
   tagline,
   aboutLead,
+  aboutHighlights[]{ word, color },
   aboutBody,
   techIntro,
   communityLead,

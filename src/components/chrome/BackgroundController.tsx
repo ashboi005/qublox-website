@@ -1,69 +1,108 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useMotionValueEvent, useScroll, useTransform } from 'motion/react'
+import { useLayoutEffect, useState } from 'react'
 
 /**
  * The ground colour is storytelling, so it is owned in exactly one place.
  *
- * Every section declares `data-ground` on its root. Whichever section holds
- * the middle of the viewport wins, and its palette is written to the document
- * element as custom properties. A CSS transition on those properties does the
- * actual crossfade, which keeps the work off the main thread entirely.
+ * It is interpolated continuously against scroll position rather than switched
+ * at section boundaries. Switching was the original approach and it was wrong
+ * twice over: the cut to black landed all at once, in a single CSS transition
+ * that had no relationship to how fast you were scrolling, and it fired when a
+ * section crossed the viewport's midpoint rather than when the section
+ * actually arrived.
+ *
+ * Now every section declares `data-ground`, we measure where those sections
+ * are, and each change is blended across a zone ending just inside the new
+ * section. Scrolling slowly means the room dims slowly.
+ *
+ * Cost: two colour interpolations per frame, written to two custom properties.
+ * Nothing re-renders — the values go straight to the document element.
  */
 
-type Ground = {
-  bg: string
-  fg: string
-  /** How hard the change lands. The media cut is meant to be violent. */
-  ms: number
-}
+type Ground = { bg: string; fg: string; blend: number }
 
 const GROUNDS: Record<string, Ground> = {
-  bone: { bg: '#f2f1ec', fg: '#101114', ms: 620 },
-  void: { bg: '#000000', fg: '#f2f1ec', ms: 220 },
-  ink: { bg: '#101114', fg: '#f2f1ec', ms: 420 },
-  yellow: { bg: '#f8c954', fg: '#1e1e20', ms: 260 },
+  // `blend` is the fraction of a viewport over which this ground arrives.
+  bone: { bg: '#f2f1ec', fg: '#0f1014', blend: 0.7 },
+  // The lights going down before the camera runs. Short: this is a cut, not a
+  // dissolve, and it must be finished before the section it belongs to
+  // arrives — a fade still running while the camera is under way reads as a
+  // rendering fault rather than as a transition.
+  void: { bg: '#000000', fg: '#f2f1ec', blend: 0.42 },
+  ink: { bg: '#0f1014', fg: '#f2f1ec', blend: 0.7 },
+  yellow: { bg: '#fecb56', fg: '#1e1f20', blend: 0.45 },
 }
 
+const FALLBACK = GROUNDS.bone!
+
 export function BackgroundController() {
-  useEffect(() => {
-    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-ground]'))
-    if (sections.length === 0) return
+  const { scrollY } = useScroll()
+  const [stops, setStops] = useState<{ at: number[]; bg: string[]; fg: string[] } | null>(null)
 
-    const root = document.documentElement
-    let current = ''
+  useLayoutEffect(() => {
+    const measure = () => {
+      const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-ground]'))
+      if (sections.length === 0) return
 
-    const apply = (name: string) => {
-      const ground = GROUNDS[name]
-      if (!ground || name === current) return
-      current = name
-      root.style.setProperty('--page-bg', ground.bg)
-      root.style.setProperty('--page-fg', ground.fg)
-      root.style.setProperty('--ground-ms', `${ground.ms}ms`)
-      root.dataset.ground = name
+      const viewport = window.innerHeight
+      const at: number[] = []
+      const bg: string[] = []
+      const fg: string[] = []
+
+      sections.forEach((section, index) => {
+        const ground = GROUNDS[section.dataset.ground ?? ''] ?? FALLBACK
+        const top = section.getBoundingClientRect().top + window.scrollY
+
+        if (index === 0) {
+          at.push(0)
+          bg.push(ground.bg)
+          fg.push(ground.fg)
+          return
+        }
+
+        const previous = GROUNDS[sections[index - 1]!.dataset.ground ?? ''] ?? FALLBACK
+        if (previous.bg === ground.bg) return
+
+        // The blend finishes exactly as the section arrives, never inside it.
+        const end = top - viewport * 0.05
+        const begin = Math.max(at[at.length - 1]! + 1, end - viewport * ground.blend)
+
+        at.push(begin, end)
+        bg.push(previous.bg, ground.bg)
+        fg.push(previous.fg, ground.fg)
+      })
+
+      setStops({ at, bg, fg })
     }
 
-    // The section covering the viewport's centre line owns the ground.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const name = (entry.target as HTMLElement).dataset.ground
-            if (name) apply(name)
-          }
-        }
-      },
-      { rootMargin: '-50% 0px -50% 0px', threshold: 0 },
-    )
-
-    sections.forEach((section) => observer.observe(section))
-
-    // Set the opening state immediately so there is no flash before the first
-    // intersection callback fires.
-    apply(sections[0]?.dataset.ground ?? 'bone')
-
-    return () => observer.disconnect()
+    measure()
+    // Section heights are in viewport units, so a resize moves every boundary.
+    window.addEventListener('resize', measure)
+    // Fonts landing shifts the flowed sections underneath the sticky ones.
+    document.fonts?.ready.then(measure).catch(() => {})
+    return () => window.removeEventListener('resize', measure)
   }, [])
+
+  const at = stops?.at ?? [0, 1]
+  const background = useTransform(scrollY, at, stops?.bg ?? [FALLBACK.bg, FALLBACK.bg])
+  const foreground = useTransform(scrollY, at, stops?.fg ?? [FALLBACK.fg, FALLBACK.fg])
+
+  useMotionValueEvent(background, 'change', (value) => {
+    document.documentElement.style.setProperty('--page-bg', value)
+  })
+  useMotionValueEvent(foreground, 'change', (value) => {
+    document.documentElement.style.setProperty('--page-fg', value)
+  })
+
+  // Paint the opening state before the first scroll event arrives.
+  useLayoutEffect(() => {
+    if (!stops) return
+    const root = document.documentElement
+    root.style.setProperty('--page-bg', background.get())
+    root.style.setProperty('--page-fg', foreground.get())
+  }, [stops, background, foreground])
 
   return null
 }

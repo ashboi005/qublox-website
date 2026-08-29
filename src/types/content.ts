@@ -62,9 +62,13 @@ export type CommunityEvent = {
   seats: string
 }
 
+/** A word in the About lead, picked out in one of the three brand colours. */
+export type Highlight = { word: string; color: 'red' | 'blue' | 'yellow' }
+
 export type SiteSettings = {
   tagline: string
   aboutLead: string
+  aboutHighlights: Highlight[]
   aboutBody: string[]
   techIntro: string
   techModules: TechModule[]

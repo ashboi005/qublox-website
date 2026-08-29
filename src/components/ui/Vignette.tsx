@@ -1,6 +1,7 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'motion/react'
+import { motion, useScroll } from 'motion/react'
+import { useScrollRange } from '@/lib/useScrollRange'
 
 /**
  * A CRT vignette that only exists once the page has gone dark. Tying its
@@ -9,7 +10,7 @@ import { motion, useScroll, useTransform } from 'motion/react'
  */
 export function Vignette() {
   const { scrollYProgress } = useScroll()
-  const opacity = useTransform(scrollYProgress, [0.1, 0.2, 0.78, 0.86], [0, 1, 1, 0])
+  const opacity = useScrollRange(scrollYProgress, [0.12, 0.22, 0.8, 0.87], [0, 1, 1, 0])
 
   return (
     <motion.div

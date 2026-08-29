@@ -20,6 +20,29 @@ export const siteSettings = defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: 'aboutHighlights',
+      title: 'About — highlighted words',
+      type: 'array',
+      description:
+        'Words in the lead line to pick out in a brand colour. Matched without case or punctuation.',
+      of: [
+        {
+          type: 'object',
+          fields: [
+            defineField({ name: 'word', type: 'string', validation: (r) => r.required() }),
+            defineField({
+              name: 'color',
+              type: 'string',
+              options: { list: ['red', 'blue', 'yellow'], layout: 'radio' },
+              initialValue: 'red',
+              validation: (r) => r.required(),
+            }),
+          ],
+          preview: { select: { title: 'word', subtitle: 'color' } },
+        },
+      ],
+    }),
+    defineField({
       name: 'aboutBody',
       title: 'About — paragraphs',
       type: 'array',

@@ -1,7 +1,6 @@
 'use client'
 
-import { useMotionValueEvent, useScroll } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ScrambleText } from '@/components/ui/ScrambleText'
 
 /**
@@ -10,36 +9,82 @@ import { ScrambleText } from '@/components/ui/ScrambleText'
  * legible as the ground goes bone → void → yellow without ever re-colouring.
  */
 
-const CHANNELS = [
-  { id: 'hero', label: 'CH 01', name: 'SIGNAL' },
-  { id: 'about', label: 'CH 02', name: 'STUDIO' },
-  { id: 'work', label: 'CH 03', name: 'WORK' },
-  { id: 'tech', label: 'CH 04', name: 'SYSTEMS' },
-  { id: 'team', label: 'CH 05', name: 'CREW' },
-  { id: 'community', label: 'CH 06', name: 'ERISED' },
-  { id: 'contact', label: 'CH 07', name: 'CONTACT' },
-]
+/**
+ * Keyed by the `data-channel` each section declares. Deriving the channel from
+ * a fraction of total scroll was wrong the moment the sections stopped being
+ * the same height — and they never were.
+ */
+const CHANNELS: Record<string, { label: string; name: string }> = {
+  hero: { label: 'CH 01', name: 'SIGNAL' },
+  about: { label: 'CH 02', name: 'STUDIO' },
+  work: { label: 'CH 03', name: 'MEDIA' },
+  tech: { label: 'CH 04', name: 'TECH' },
+  team: { label: 'CH 05', name: 'CREW' },
+  community: { label: 'CH 06', name: 'ERISED' },
+  contact: { label: 'CH 07', name: 'CONTACT' },
+}
 
-const NAV = [
-  { id: 'work', label: 'Work' },
-  { id: 'tech', label: 'Systems' },
-  { id: 'team', label: 'Crew' },
-  { id: 'community', label: 'ERISED' },
-  { id: 'contact', label: 'Contact' },
-]
+const ORDER = Object.keys(CHANNELS)
+
+/**
+ * What the wordmark cycles through. Six characters or fewer, so the slot does
+ * not resize under the scramble, and each one is a thing the studio actually
+ * sells rather than an adjective.
+ */
+const KEYWORDS = ['FILMS', 'AGENTS', 'ADS', 'CODE', 'POST']
+
+// One destination only. Everything else on this page is reached by scrolling
+// through it, which is the point of the page; a full nav invites you to skip
+// the thing you came to see.
+const NAV = [{ id: 'contact', label: 'Contact' }]
 
 export function Header() {
-  const { scrollYProgress } = useScroll()
-  const [channel, setChannel] = useState(CHANNELS[0]!)
-  const [signal, setSignal] = useState(4)
+  const [current, setCurrent] = useState('hero')
 
-  useMotionValueEvent(scrollYProgress, 'change', (progress) => {
-    const index = Math.min(CHANNELS.length - 1, Math.floor(progress * CHANNELS.length))
-    const next = CHANNELS[index]!
-    if (next.id !== channel.id) setChannel(next)
-    // Signal strength drifts with scroll — an instrument, not a progress bar.
-    setSignal(1 + Math.floor(progress * 4.999))
-  })
+  /**
+   * The readout follows whichever section's top edge has passed the top of the
+   * viewport — not whichever holds the middle.
+   *
+   * The middle rule is right for the ground colour, but wrong here: a section
+   * that pins for five screens does not reach its own midpoint until you are
+   * deep inside it, so the readout still said CH 02 while CH 03 was pinned and
+   * filling the frame, contradicting the section's own label.
+   */
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-channel]'))
+    if (sections.length === 0) return
+
+    let queued = false
+    const sync = () => {
+      queued = false
+      let active = sections[0]?.dataset.channel ?? 'hero'
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top <= 1) {
+          active = section.dataset.channel ?? active
+        }
+      }
+      setCurrent((previous) => (previous === active ? previous : active))
+    }
+
+    const onScroll = () => {
+      if (queued) return
+      queued = true
+      requestAnimationFrame(sync)
+    }
+
+    sync()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+    }
+  }, [])
+
+  const channel = CHANNELS[current] ?? CHANNELS.hero!
+  // Signal strength climbs as you get further into the broadcast. An
+  // instrument, not a progress bar — but it should still mean something.
+  const signal = 1 + Math.min(4, ORDER.indexOf(current))
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[100] mix-blend-difference">
@@ -50,12 +95,18 @@ export function Header() {
           className="pointer-events-auto group flex items-baseline gap-2.5"
           aria-label="Qublox — back to top"
         >
-          <ScrambleText
-            text="QUBLOX"
-            className="display text-[1.15rem] leading-none tracking-[0.02em] sm:text-[1.35rem]"
-            dwell={340}
-            stagger={55}
-          />
+          {/* A fixed slot, so a shorter keyword never shifts the ® beside it. */}
+          <span className="inline-block min-w-[7ch]">
+            <ScrambleText
+              text="QUBLOX"
+              className="display text-[1.15rem] leading-none tracking-[0.02em] sm:text-[1.35rem]"
+              dwell={340}
+              stagger={55}
+              cycle={KEYWORDS}
+              brandHold={10000}
+              wordHold={4500}
+            />
+          </span>
           <span className="label hidden opacity-55 sm:inline">®</span>
         </a>
 

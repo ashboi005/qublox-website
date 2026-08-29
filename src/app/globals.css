@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'lenis/dist/lenis.css';
 
 /* ===========================================================================
    QUBLOX — one signal, six machines.
@@ -8,13 +9,15 @@
 
 @theme {
   /* --- grounds ---------------------------------------------------------- */
+  /* Sampled from the supplied artwork rather than guessed, so the site and the
+     logo files agree exactly and the PNG never shows as a box on the ground. */
   --color-bone: #f2f1ec;
   --color-bone-dim: #e4e2da;
-  --color-ink: #101114;
+  --color-ink: #0f1014;
   --color-void: #000000;
 
   /* --- the Qublox dot --------------------------------------------------- */
-  --color-signal: #f5333f;
+  --color-signal: #ff2f36;
 
   /* --- CRT channel split (lifted from the Google 84 plate) -------------- */
   --color-chan-red: #ff3b30;
@@ -22,22 +25,32 @@
   --color-chan-yellow: #ffd23f;
   --color-chan-green: #3bffa8;
 
-  /* --- terminal --------------------------------------------------------- */
+  /* --- phosphor (the trail's spectrum, the hero's bloom) ---------------- */
   --color-phosphor: #3bffa8;
-  --color-phosphor-dim: #1c7d54;
   --color-amber: #ffb000;
 
+  /* --- the terminal: Borland / Turbo C++, not a green VT --------------- */
+  --color-dos-blue: #0000a8;
+  --color-dos-blue-deep: #000074;
+  --color-dos-grey: #a8a8a8;
+  --color-dos-white: #ffffff;
+  --color-dos-cyan: #55ffff;
+  --color-dos-yellow: #ffff55;
+  --color-dos-red: #ff5555;
+
   /* --- ERISED ----------------------------------------------------------- */
-  --color-erised-yellow: #f8c954;
-  --color-erised-yellow-deep: #e8b33c;
+  --color-erised-yellow: #fecb56;
+  --color-erised-yellow-deep: #eeb63c;
   --color-erised-blue: #3a6ea5;
-  --color-erised-ink: #1e1e20;
+  --color-erised-ink: #1e1f20;
 
   /* --- type ------------------------------------------------------------- */
   --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
   --font-body: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
   --font-round: var(--font-fredoka), 'Fredoka', system-ui, sans-serif;
+  --font-serif: var(--font-instrument), 'Instrument Serif', Georgia, serif;
+  --font-cursive: var(--font-playfair), 'Playfair Display', Georgia, serif;
 
   /* --- motion ----------------------------------------------------------- */
   --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
@@ -234,18 +247,19 @@ body {
    Ground transitions — driven by BackgroundController, animated by CSS.
    =========================================================================== */
 
-body {
-  transition:
-    background-color var(--ground-ms, 400ms) var(--ease-snap),
-    color var(--ground-ms, 400ms) var(--ease-snap);
+/* No transition here: BackgroundController interpolates --page-bg against
+   scroll position every frame, and a CSS transition would fight it. */
+
+/* The hero marquee. Half the track is one full copy of the sequence, so
+   -50% lands exactly on the seam. */
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 
-/* On the dark grounds the hairlines need to be brighter to survive. */
-:root[data-ground='void'],
-:root[data-ground='ink'] {
-  --rule-strength: 26%;
-}
-:root[data-ground='bone'],
-:root[data-ground='yellow'] {
-  --rule-strength: 18%;
+@media (prefers-reduced-motion: reduce) {
+  @keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(0, 0, 0); }
+  }
 }
