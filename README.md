@@ -44,10 +44,32 @@ NEXT_PUBLIC_SANITY_PROJECT_ID=...
 NEXT_PUBLIC_SANITY_DATASET=production
 ```
 
-The Studio is then embedded at `/studio`. Sanity is treated as an *override*
-layer: any collection that comes back empty, or a read that fails outright,
-falls through to the bundled content, so a half-filled Studio can never leave
-the site blank.
+Then, once per project:
+
+```bash
+bun run sanity login          # opens a browser
+bun run sanity dataset create production   # skip if it already exists
+bun run sanity:cors           # allow the embedded Studio on localhost
+```
+
+Restart the dev server and the Studio is at **`/studio`**.
+
+**There is no schema push.** The embedded Studio bundles the schemas from
+`sanity.config.ts` at build time, so editing a file under
+`src/sanity/schemas/` and reloading the page is the whole deploy cycle. The
+CLI is only for what lives on Sanity's side: datasets, CORS origins, tokens.
+(`bun run sanity:deploy-schema` exists, but it publishes the schema for
+Sanity's own hosted tooling — the Studio here does not read it.)
+
+For production, add the deployed origin too:
+
+```bash
+bun run sanity cors add https://your-domain.com --credentials
+```
+
+Sanity is treated as an *override* layer: any collection that comes back
+empty, or a read that fails outright, falls through to the bundled content, so
+a half-filled Studio can never leave the site blank.
 
 Document types: `siteSettings`, `service`, `project`, `techModule`,
 `teamMember`, `communityEvent`.

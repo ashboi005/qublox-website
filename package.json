@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "sanity": "sanity",
+    "sanity:cors": "sanity cors add http://localhost:3000 --credentials",
+    "sanity:deploy-schema": "sanity schema deploy"
   },
   "dependencies": {
     "@sanity/client": "^7.26.2",

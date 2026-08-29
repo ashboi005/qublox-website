@@ -72,10 +72,9 @@ const TANGENTS: Record<Dir, [Vec, Vec]> = {
 const PLASTIC = '#0b0b0d'
 /**
  * How wide the cube reads on screen, across its flat face, in CSS pixels.
- * This is the only number that controls its apparent size — 31px keeps it at
- * exactly the size it was before padding and size were separated.
+ * This is the only number that controls its apparent size.
  */
-const CUBE = 31
+const CUBE = 25
 
 /**
  * Transparent room around it.
@@ -91,7 +90,7 @@ const CUBE = 31
  * the clipping was to make the cube bigger. They are separate now: PAD adds
  * room, CUBE sets the size, and neither moves the other.
  */
-const PAD = 34
+const PAD = 30
 
 /** The drawing surface. Derived — never tune this directly. */
 const BOX = CUBE + PAD * 2

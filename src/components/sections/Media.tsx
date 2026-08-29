@@ -73,8 +73,16 @@ const PRISM_IN = 0.46
 const CARD_MAX = 340
 const TOP_PAD = 120
 const BOTTOM_PAD = 88
-/** Where the camera sits on screen while the world slides past it. */
-const CAMERA_HOLD = 0.45
+/**
+ * Where the camera sits on screen while the world slides past it.
+ *
+ * It used to hold at 45%, which left the entire right half of the frame empty:
+ * the work trails *behind* the camera, so everything on screen was crowded
+ * into the left, and only one frame was ever legible at a time. Holding it far
+ * right gives that trail most of the viewport, so the frame the camera has
+ * just shot and the one before it are both readable at once.
+ */
+const CAMERA_HOLD = 0.78
 
 export function Media({ projects }: { projects: Project[] }) {
   const ref = useRef<HTMLElement>(null)

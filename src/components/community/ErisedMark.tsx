@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { motion, type MotionValue } from 'motion/react'
+import { motion, useTransform, type MotionValue } from 'motion/react'
 import { SPLAT_VARIANTS } from './Splat'
 import { useScrollRange } from '@/lib/useScrollRange'
 
@@ -50,7 +50,14 @@ export function ErisedMark({ progress }: { progress: MotionValue<number> }) {
   // over it, so there is never a frame with neither on screen.
   const inkOpacity = useScrollRange(progress, [0.6, 0.74], [1, 0])
   const artOpacity = useScrollRange(progress, [0.6, 0.74], [0, 1])
-  const artScale = useScrollRange(progress, [0.6, 0.78], [1.06, 1])
+  const artSettle = useScrollRange(progress, [0.6, 0.78], [1.06, 1])
+  /**
+   * The file carries its own margin, so it needs upscaling to sit at the same
+   * size as the vector stage. Doing that with a transform rather than a width
+   * keeps its layout box the size of the stage — at 118% width the artwork
+   * overflowed downward and covered the line of copy beneath it.
+   */
+  const artScale = useTransform(artSettle, (v) => v * 1.18)
 
   return (
     <div className="relative w-[min(84vw,32rem)]">
@@ -108,7 +115,7 @@ export function ErisedMark({ progress }: { progress: MotionValue<number> }) {
           width={900}
           height={900}
           priority={false}
-          className="w-[118%] max-w-none"
+          className="h-full w-full object-contain"
         />
       </motion.div>
     </div>

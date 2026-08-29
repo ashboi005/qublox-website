@@ -1,5 +1,6 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ScrambleText } from '@/components/ui/ScrambleText'
 
@@ -20,26 +21,29 @@ const CHANNELS: Record<string, { label: string; name: string }> = {
   work: { label: 'CH 03', name: 'MEDIA' },
   tech: { label: 'CH 04', name: 'TECH' },
   team: { label: 'CH 05', name: 'CREW' },
-  community: { label: 'CH 06', name: 'ERISED' },
-  contact: { label: 'CH 07', name: 'CONTACT' },
+  contact: { label: 'CH 06', name: 'CONTACT' },
 }
 
 const ORDER = Object.keys(CHANNELS)
 
 /**
- * What the wordmark cycles through. Six characters or fewer, so the slot does
- * not resize under the scramble, and each one is a thing the studio actually
- * sells rather than an adjective.
+ * Two destinations. Everything else on this page is reached by scrolling
+ * through it, which is the point of the page; a full nav invites you to skip
+ * the thing you came to see. ERISED is here because it is a different room
+ * entirely — its own page, not a stop on this one.
  */
-const KEYWORDS = ['FILMS', 'AGENTS', 'ADS', 'CODE', 'POST']
-
-// One destination only. Everything else on this page is reached by scrolling
-// through it, which is the point of the page; a full nav invites you to skip
-// the thing you came to see.
-const NAV = [{ id: 'contact', label: 'Contact' }]
+const NAV = [
+  { href: '/erised', label: 'ERISED' },
+  { href: '#contact', label: 'Contact', home: true },
+]
 
 export function Header() {
-  const [current, setCurrent] = useState('hero')
+  const pathname = usePathname()
+  const onHome = pathname === '/'
+  // Null until the first measurement, and on any page that has no channels at
+  // all — the tuner is a readout of this page's sections, so it should show
+  // nothing rather than a channel that is not there.
+  const [current, setCurrent] = useState<string | null>(null)
 
   /**
    * The readout follows whichever section's top edge has passed the top of the
@@ -52,7 +56,10 @@ export function Header() {
    */
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-channel]'))
-    if (sections.length === 0) return
+    if (sections.length === 0) {
+      setCurrent(null)
+      return
+    }
 
     let queued = false
     const sync = () => {
@@ -81,40 +88,38 @@ export function Header() {
     }
   }, [])
 
-  const channel = CHANNELS[current] ?? CHANNELS.hero!
+  const channel = current ? CHANNELS[current] : undefined
   // Signal strength climbs as you get further into the broadcast. An
   // instrument, not a progress bar — but it should still mean something.
-  const signal = 1 + Math.min(4, ORDER.indexOf(current))
+  const signal = current ? 1 + Math.min(4, ORDER.indexOf(current)) : 0
 
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[100] mix-blend-difference">
       <div className="edge-x flex items-start justify-between py-5 text-bone">
         {/* Wordmark */}
         <a
-          href="#hero"
+          href={onHome ? '#hero' : '/'}
           className="pointer-events-auto group flex items-baseline gap-2.5"
-          aria-label="Qublox — back to top"
+          aria-label={onHome ? 'Qublox — back to top' : 'Qublox — home'}
         >
-          {/* A fixed slot, so a shorter keyword never shifts the ® beside it. */}
-          <span className="inline-block min-w-[7ch]">
-            <ScrambleText
-              text="QUBLOX"
-              className="display text-[1.15rem] leading-none tracking-[0.02em] sm:text-[1.35rem]"
-              dwell={340}
-              stagger={55}
-              cycle={KEYWORDS}
-              brandHold={10000}
-              wordHold={4500}
-            />
-          </span>
+          <ScrambleText
+            text="QUBLOX"
+            className="display text-[1.15rem] leading-none tracking-[0.02em] sm:text-[1.35rem]"
+            dwell={340}
+            stagger={55}
+          />
           <span className="label hidden opacity-55 sm:inline">®</span>
         </a>
 
         {/* Channel readout — the current section, dressed as a tuner */}
-        <div className="label hidden items-center gap-3 opacity-70 md:flex" aria-hidden="true">
-          <span>{channel.label}</span>
+        <div
+          className="label hidden items-center gap-3 opacity-70 md:flex"
+          style={{ visibility: channel ? 'visible' : 'hidden' }}
+          aria-hidden="true"
+        >
+          <span>{channel?.label}</span>
           <span className="h-px w-6 bg-current opacity-40" />
-          <span className="w-[7ch]">{channel.name}</span>
+          <span className="w-[7ch]">{channel?.name}</span>
           <span className="flex items-end gap-[2px]" title="Signal">
             {[1, 2, 3, 4, 5].map((bar) => (
               <span
@@ -130,8 +135,8 @@ export function Header() {
         <nav className="pointer-events-auto flex items-center gap-4 sm:gap-6" aria-label="Sections">
           {NAV.map((item) => (
             <a
-              key={item.id}
-              href={`#${item.id}`}
+              key={item.href}
+              href={item.home && !onHome ? `/${item.href}` : item.href}
               className="label relative py-1 opacity-70 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100"
             >
               {item.label}

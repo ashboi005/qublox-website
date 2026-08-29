@@ -1,5 +1,4 @@
 import { About } from '@/components/sections/About'
-import { Community } from '@/components/sections/Community'
 import { Contact } from '@/components/sections/Contact'
 import { Footer } from '@/components/sections/Footer'
 import { Hero } from '@/components/sections/Hero'
@@ -15,7 +14,7 @@ import { Vignette } from '@/components/ui/Vignette'
 import { getSiteContent } from '@/sanity/lib/content'
 
 export default async function Page() {
-  const { settings, services, projects, team, events } = await getSiteContent()
+  const { settings, services, projects, team } = await getSiteContent()
 
   return (
     <SmoothScroll>
@@ -40,9 +39,7 @@ export default async function Page() {
         <Machine settings={settings} />
         {/* CH 05 — the crew */}
         <Team team={team} />
-        {/* CH 06 — the room */}
-        <Community settings={settings} events={events} />
-        {/* CH 07 — the reply */}
+        {/* CH 06 — the reply */}
         <Contact settings={settings} />
       </main>
 
