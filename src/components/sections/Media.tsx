@@ -73,6 +73,9 @@ const PRISM_IN = 0.46
 const CARD_MAX = 340
 const TOP_PAD = 120
 const BOTTOM_PAD = 88
+/** Space between a frame's leading edge and the beam it hangs from. */
+const CARD_GUTTER = 24
+const EDGE_PAD = 20
 /**
  * Where the camera sits on screen while the world slides past it.
  *
@@ -95,16 +98,28 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
   // pulled rather than a value being set.
   const travel = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: 0.6 })
 
+  const cardWidth = Math.min(size.width * 0.66, CARD_MAX)
+
   // Path position, which the camera and the beam's drawn length both read.
   const pathT = useScrollRange(travel, [0, ARRIVE], [0, 1])
   const dashOffset = useScrollRange(travel, [0, ARRIVE], [length, 0])
 
-  // The track slides so the camera holds its place on screen. Clamped at both
-  // ends so the first and last stretch of path are reachable.
+  /**
+   * The track slides so the camera holds its place on screen.
+   *
+   * The leading clamp is a full card width rather than zero. Frames hang to
+   * the *left* of their anchor, so the track needs that much room to its left
+   * before the first anchor or the card has nowhere to go — clamped at zero,
+   * a project anchored early in the path had its frame pinned off the left
+   * edge for its entire visible life, half of it never on screen. This is the
+   * structural version of the fix: it holds for any anchor an editor picks,
+   * rather than depending on the first project starting late enough.
+   */
+  const lead = cardWidth + CARD_GUTTER + EDGE_PAD
   const trackX = useTransform(pathT, (t) => {
     const camera = sampleAt(samples, t).x
     const wanted = -(camera - size.width * CAMERA_HOLD)
-    return Math.min(0, Math.max(-(trackWidth - size.width), wanted))
+    return Math.min(lead, Math.max(-(trackWidth - size.width), wanted))
   })
 
   const camX = useTransform(pathT, (t) => sampleAt(samples, t).x)
@@ -140,7 +155,6 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
     if (next !== frameNumber) setFrameNumber(next)
   })
 
-  const cardWidth = Math.min(size.width * 0.66, CARD_MAX)
 
   return (
     <section
@@ -151,7 +165,14 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
       className="relative h-[560vh]"
       aria-labelledby="work-heading"
     >
-      <div ref={stageRef} className="sticky top-0 h-[100svh] overflow-hidden">
+      {/*
+        The stage paints its own black.
+        The clapper's veil lives inside that section's sticky, so it rides away
+        with it — without a black underneath here, the bone ground showed
+        through the seam for the screen's worth of scroll between the slate
+        unpinning and the ground blend reaching black.
+      */}
+      <div ref={stageRef} className="sticky top-0 h-[100svh] overflow-hidden bg-black">
         <h2 id="work-heading" className="sr-only">
           Selected work
         </h2>
@@ -365,7 +386,7 @@ function TrailFrame({
         width: cardWidth,
         x: point.x,
         y: top,
-        translateX: 'calc(-100% - 1.5rem)',
+        translateX: `calc(-100% - ${CARD_GUTTER}px)`,
         translateY: above ? '-114%' : '14%',
         ...(reduced ? {} : { opacity, scale, filter }),
       }}

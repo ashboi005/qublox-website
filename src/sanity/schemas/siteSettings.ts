@@ -114,12 +114,25 @@ export const siteSettings = defineType({
           description:
             'The words that scroll behind the television. Short and loud — they are read at a glance while scrolling past. Each is set in a different face automatically.',
         }),
+        defineField({
+          name: 'broadcasts',
+          title: 'What the set broadcasts',
+          type: 'array',
+          of: [line],
+          description:
+            'The logo is channel 01 and is always there. These follow it, one per channel, glitching over every five seconds — and viewers can turn the dial themselves. Short and shoutable: they are set very large.',
+        }),
         defineField({ name: 'serial', title: 'Instrument strip — left', type: 'string' }),
         defineField({ name: 'established', title: 'Instrument strip — right', type: 'string' }),
         defineField({ name: 'scrollCue', title: 'Scroll cue', type: 'string' }),
         defineField({ name: 'tvBrand', title: 'Set — brand plate', type: 'string' }),
         defineField({ name: 'tvModel', title: 'Set — model plate', type: 'string' }),
-        defineField({ name: 'tvChannel', title: 'Set — channel window', type: 'string' }),
+        defineField({
+          name: 'tvChannel',
+          title: 'Set — channel window',
+          type: 'string',
+          description: 'The band shown on the set’s channel card. The channel number is added after it.',
+        }),
       ],
     }),
 
@@ -163,6 +176,13 @@ export const siteSettings = defineType({
       group: 'media',
       options: { collapsible: false },
       fields: [
+        defineField({
+          name: 'slateProduction',
+          title: 'Clapperboard — production',
+          type: 'string',
+          description: 'Printed on the slate that claps the chapter open.',
+        }),
+        defineField({ name: 'slateDirector', title: 'Clapperboard — director', type: 'string' }),
         defineField({ name: 'eyebrow', type: 'string' }),
         defineField({ name: 'yearRange', title: 'Eyebrow — right', type: 'string' }),
         defineField({ name: 'recLabel', title: 'Footer — record lamp', type: 'string' }),

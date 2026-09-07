@@ -16,11 +16,22 @@ export function RetroTV({
   brand,
   model,
   channel,
+  channelIndex,
+  powered,
+  onTune,
+  onPower,
 }: {
   children: React.ReactNode
   brand: string
   model: string
+  /** The channel card's readout — blank when the set is off. */
   channel: string
+  /** Which channel is on air, so the dial's pointer sits where it should. */
+  channelIndex: number
+  powered: boolean
+  /** +1 / −1 from the channel dial. */
+  onTune: (direction: number) => void
+  onPower: () => void
 }) {
   return (
     <div className="relative w-[min(80vw,46rem)]">
@@ -130,7 +141,16 @@ export function RetroTV({
                 'inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -2px 5px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.4)',
             }}
           >
-            <Dial label="CH" ticks={13} big />
+            <Dial
+              label="CH"
+              ticks={13}
+              big
+              // A quarter of the ring per channel, so the pointer visibly
+              // steps round rather than creeping.
+              angle={channelIndex * 34}
+              onStep={onTune}
+              title="Change channel"
+            />
             <Dial label="VOL" ticks={9} />
 
             {/* channel card */}
@@ -139,10 +159,13 @@ export function RetroTV({
               style={{ background: '#2a241e', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.8)' }}
             >
               <span
-                className="block font-mono text-[0.42rem] leading-none tracking-[0.14em] text-[#ffb000]"
-                style={{ textShadow: '0 0 6px rgba(255,176,0,0.85)' }}
+                className="block font-mono text-[0.42rem] leading-none tracking-[0.14em] transition-all duration-300"
+                style={{
+                  color: powered ? '#ffb000' : '#4a4034',
+                  textShadow: powered ? '0 0 6px rgba(255,176,0,0.85)' : 'none',
+                }}
               >
-                {channel}
+                {powered ? channel : '—'}
               </span>
             </div>
 
@@ -157,11 +180,28 @@ export function RetroTV({
               ))}
             </div>
 
-            {/* power lamp */}
-            <span
-              className="mb-[4%] block h-[7px] w-[7px] rounded-full bg-signal"
-              style={{ boxShadow: '0 0 9px 2px rgba(245,51,63,0.8), inset 0 -1px 2px rgba(0,0,0,0.4)' }}
-            />
+            {/* power */}
+            <button
+              type="button"
+              onClick={onPower}
+              aria-pressed={powered}
+              className="group mb-[4%] flex cursor-pointer flex-col items-center gap-[3px] rounded-full p-[3px] transition-transform active:scale-90"
+            >
+              <span className="sr-only">{powered ? 'Switch the television off' : 'Switch the television on'}</span>
+              <span
+                aria-hidden="true"
+                className="block h-[7px] w-[7px] rounded-full transition-all duration-300"
+                style={{
+                  background: powered ? 'var(--color-signal)' : '#5c5346',
+                  boxShadow: powered
+                    ? '0 0 9px 2px rgba(255,47,54,0.8), inset 0 -1px 2px rgba(0,0,0,0.4)'
+                    : 'inset 0 1px 2px rgba(0,0,0,0.55)',
+                }}
+              />
+              <span className="font-mono text-[0.36rem] tracking-[0.16em] text-[#463d31] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                PWR
+              </span>
+            </button>
           </div>
         </div>
 
@@ -191,59 +231,132 @@ export function RetroTV({
   )
 }
 
-/** A rotary dial with a knurled rim, a pointer and a printed tick ring. */
-function Dial({ label, ticks, big = false }: { label: string; ticks: number; big?: boolean }) {
-  return (
-    <div className={`relative w-full ${big ? 'mt-[4%]' : 'mt-[12%]'}`}>
-      <svg viewBox="0 0 100 100" className="w-full">
-        {/* tick ring */}
-        {Array.from({ length: ticks }, (_, i) => {
-          const angle = -210 + (i * 240) / (ticks - 1)
-          return (
-            <line
+/**
+ * A rotary dial with a knurled rim, a pointer and a printed tick ring.
+ *
+ * With `onStep` it becomes a real control: click to advance, and the arrow
+ * keys turn it either way once it has focus — which is what a rotary control
+ * should do for anyone not using a mouse. Without it, it is furniture, and is
+ * hidden from assistive tech accordingly.
+ *
+ * The tick ring and the knob are separate layers so the ring can stay printed
+ * on the cabinet while the knob turns against it, which is how the pointer
+ * reads as pointing *at* something.
+ */
+function Dial({
+  label,
+  ticks,
+  big = false,
+  angle = 0,
+  onStep,
+  title,
+}: {
+  label: string
+  ticks: number
+  big?: boolean
+  angle?: number
+  onStep?: (direction: number) => void
+  title?: string
+}) {
+  const body = (
+    <>
+      <span className="relative block w-full">
+        {/* printed tick ring */}
+        <svg viewBox="0 0 100 100" className="w-full">
+          {Array.from({ length: ticks }, (_, i) => {
+            const tick = -210 + (i * 240) / (ticks - 1)
+            return (
+              <line
+                key={i}
+                x1="50"
+                y1="7"
+                x2="50"
+                y2={i % 3 === 0 ? 14 : 11}
+                stroke="#463d31"
+                strokeWidth={i % 3 === 0 ? 2.4 : 1.4}
+                transform={`rotate(${tick + 180} 50 50)`}
+                opacity="0.7"
+              />
+            )
+          })}
+        </svg>
+
+        {/* the knob, which turns */}
+        <svg
+          viewBox="0 0 100 100"
+          className="absolute inset-0 w-full transition-transform duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+          style={{ transform: `rotate(${angle}deg)` }}
+        >
+          <defs>
+            <radialGradient id={`knob-${label}`} cx="0.36" cy="0.3" r="0.85">
+              <stop offset="0%" stopColor="#5c5346" />
+              <stop offset="45%" stopColor="#2f2820" />
+              <stop offset="100%" stopColor="#141009" />
+            </radialGradient>
+          </defs>
+
+          <circle cx="50" cy="50" r="33" fill="#100d09" />
+          {Array.from({ length: 28 }, (_, i) => (
+            <rect
               key={i}
-              x1="50"
-              y1="7"
-              x2="50"
-              y2={i % 3 === 0 ? 14 : 11}
-              stroke="#463d31"
-              strokeWidth={i % 3 === 0 ? 2.4 : 1.4}
-              transform={`rotate(${angle + 180} 50 50)`}
-              opacity="0.7"
+              x="49"
+              y="17"
+              width="2"
+              height="7"
+              fill="#3d3529"
+              transform={`rotate(${(i * 360) / 28} 50 50)`}
             />
-          )
-        })}
+          ))}
 
-        <defs>
-          <radialGradient id={`knob-${label}`} cx="0.36" cy="0.3" r="0.85">
-            <stop offset="0%" stopColor="#5c5346" />
-            <stop offset="45%" stopColor="#2f2820" />
-            <stop offset="100%" stopColor="#141009" />
-          </radialGradient>
-        </defs>
-
-        {/* knurled rim */}
-        <circle cx="50" cy="50" r="33" fill="#100d09" />
-        {Array.from({ length: 28 }, (_, i) => (
+          <circle cx="50" cy="50" r="27" fill={`url(#knob-${label})`} />
+          {/* pointer */}
           <rect
-            key={i}
-            x="49"
-            y="17"
-            width="2"
-            height="7"
-            fill="#3d3529"
-            transform={`rotate(${(i * 360) / 28} 50 50)`}
+            x="48.4"
+            y="26"
+            width="3.2"
+            height="16"
+            rx="1.6"
+            fill="#d8cfba"
+            transform="rotate(-32 50 50)"
           />
-        ))}
+          <circle cx="42" cy="40" r="4" fill="rgba(255,255,255,0.14)" />
+        </svg>
+      </span>
 
-        <circle cx="50" cy="50" r="27" fill={`url(#knob-${label})`} />
-        {/* pointer */}
-        <rect x="48.4" y="26" width="3.2" height="16" rx="1.6" fill="#d8cfba" transform="rotate(-32 50 50)" />
-        <circle cx="42" cy="40" r="4" fill="rgba(255,255,255,0.14)" />
-      </svg>
       <span className="mt-[2%] block text-center font-mono text-[0.42rem] tracking-[0.18em] text-[#463d31]">
         {label}
       </span>
-    </div>
+    </>
+  )
+
+  const spacing = big ? 'mt-[4%]' : 'mt-[12%]'
+
+  if (!onStep) {
+    return (
+      <div aria-hidden="true" className={`relative w-full ${spacing}`}>
+        {body}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onStep(1)}
+      onKeyDown={(event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') {
+          event.preventDefault()
+          onStep(-1)
+        }
+        if (event.key === 'ArrowRight' || event.key === 'ArrowUp') {
+          event.preventDefault()
+          onStep(1)
+        }
+      }}
+      className={`relative w-full cursor-pointer rounded-full transition-transform active:scale-95 ${spacing}`}
+    >
+      <span className="sr-only">{title}</span>
+      {body}
+    </button>
   )
 }

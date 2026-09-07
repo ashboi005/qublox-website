@@ -33,12 +33,23 @@ export const fallbackContent: SiteContent = {
         'POST + MOTION',
         'INTERACTIVE',
       ],
+      broadcasts: [
+        'PRODUCTION',
+        'MEDIA HOUSE',
+        'TECH HOUSE',
+        'SHORT FILM',
+        'ADS',
+        'CUSTOM SOFTWARE',
+        'AI AGENTS',
+        'POST + VFX',
+        'CAMPAIGNS',
+      ],
       serial: 'NDFR-00 NMB 00001',
       established: 'EST. 2025',
       scrollCue: '↓ SCROLL TO TUNE',
       tvBrand: 'QUBLOX',
       tvModel: 'MODEL QX-CRT · SOLID STATE · 1984',
-      tvChannel: 'VHF 01',
+      tvChannel: 'VHF',
     },
 
     about: {
@@ -61,6 +72,8 @@ export const fallbackContent: SiteContent = {
     },
 
     media: {
+      slateProduction: 'QUBLOX',
+      slateDirector: 'R. MENON',
       eyebrow: 'CH 03 — MEDIA',
       yearRange: '2023 — 2025',
       recLabel: 'REC',

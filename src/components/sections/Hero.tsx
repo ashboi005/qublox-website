@@ -3,7 +3,8 @@
 import { motion, useScroll } from 'motion/react'
 import { useScrollRange } from '@/lib/useScrollRange'
 import { useRef } from 'react'
-import { ChannelSplitLogo } from '@/components/hero/ChannelSplitLogo'
+import { TvScreen } from '@/components/hero/TvScreen'
+import { useBroadcast } from '@/components/hero/useBroadcast'
 import { RetroTV } from '@/components/hero/RetroTV'
 import { ScrollLines } from '@/components/hero/ScrollLines'
 import type { SiteSettings } from '@/types/content'
@@ -24,6 +25,9 @@ export function Hero({ settings }: { settings: SiteSettings }) {
   })
 
   const hero = settings.hero
+  // Channel 0 is the logo; the broadcast words follow it.
+  const broadcasts = hero.broadcasts
+  const { channel, powered, glitch, tune, togglePower } = useBroadcast(broadcasts.length + 1)
   // Falls back to the services' own short forms if the wall is left empty.
   const lines = hero.marquee
 
@@ -47,10 +51,22 @@ export function Hero({ settings }: { settings: SiteSettings }) {
 
         {/* ---- the set --------------------------------------------------- */}
         <motion.div className="relative z-10" style={{ opacity: tvOpacity }}>
-          <RetroTV brand={hero.tvBrand} model={hero.tvModel} channel={hero.tvChannel}>
+          <RetroTV
+            brand={hero.tvBrand}
+            model={hero.tvModel}
+            channel={`${hero.tvChannel} ${String(channel + 1).padStart(2, '0')}`}
+            channelIndex={channel}
+            powered={powered}
+            onTune={(direction) => tune(channel + direction)}
+            onPower={togglePower}
+          >
             <div className="absolute inset-0 z-10 grid place-items-center p-[6%]">
               <div className="h-full w-auto" style={{ aspectRatio: '1 / 1' }}>
-                <ChannelSplitLogo />
+                <TvScreen
+                  word={channel === 0 ? null : (broadcasts[channel - 1] ?? null)}
+                  powered={powered}
+                  glitch={glitch}
+                />
               </div>
             </div>
           </RetroTV>

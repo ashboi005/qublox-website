@@ -2,6 +2,7 @@ import { About } from '@/components/sections/About'
 import { Contact } from '@/components/sections/Contact'
 import { Footer } from '@/components/sections/Footer'
 import { Hero } from '@/components/sections/Hero'
+import { Clapperboard } from '@/components/media/Clapperboard'
 import { Media } from '@/components/sections/Media'
 import { Team } from '@/components/sections/Team'
 import { Machine } from '@/components/sections/Machine'
@@ -27,6 +28,8 @@ export default async function Page() {
       <CubeCursor />
       <Grain />
       <Vignette />
+      {/* the slate claps CH 03 open, across the seam rather than in it */}
+      <Clapperboard copy={settings.media} />
 
       <main id="main">
         {/* CH 01 — the signal arrives */}

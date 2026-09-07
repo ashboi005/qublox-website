@@ -158,6 +158,13 @@ arrangement of those three that is correct at every angle, because the depth
 order is not ours to set. `CubeCursor.tsx` draws to a canvas instead and sorts
 its own quads back-to-front, which makes occlusion correct by construction.
 
+**A `position: sticky` element always creates a stacking context.** So a
+`z-index` set on one of its descendants is trapped inside it and cannot
+out-rank anything outside — which is why the clapperboard's `z-130` lost to
+the fixed header's `z-100` until the z-index moved onto the sticky container
+itself. If something inside a sticky block has to paint over fixed chrome, the
+z-index belongs on the block, not on the thing inside it.
+
 **Sticky sections cannot hand over to each other.** A `sticky` child unpins a
 viewport before its parent ends, so between two sticky sections there is
 always a screen of scroll where the first slides away and the second has not

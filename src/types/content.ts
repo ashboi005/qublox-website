@@ -88,6 +88,11 @@ export type HeroSettings = {
    * while scrolling past.
    */
   marquee: string[]
+  /**
+   * What the set broadcasts. The logo is channel 01 and is always present;
+   * these follow it, one per channel, cycling on a timer and on the dial.
+   */
+  broadcasts: string[]
   /** Instrument strip along the foot of the frame. */
   serial: string
   established: string
@@ -110,6 +115,9 @@ export type AboutSettings = {
 
 /** CH 03 — the camera run. */
 export type MediaSettings = {
+  /** Printed on the clapperboard that opens the chapter. */
+  slateProduction: string
+  slateDirector: string
   eyebrow: string
   yearRange: string
   recLabel: string

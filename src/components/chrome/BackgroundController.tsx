@@ -30,7 +30,10 @@ const GROUNDS: Record<string, Ground> = {
   // dissolve, and it must be finished before the section it belongs to
   // arrives — a fade still running while the camera is under way reads as a
   // rendering fault rather than as a transition.
-  void: { bg: '#000000', fg: '#f2f1ec', blend: 0.42 },
+  // Short on purpose. The slate covers the frame while this happens, so the
+  // ground flips behind it — the clap is the cut, and a long dissolve either
+  // side of it would show the page changing its mind before the board lands.
+  void: { bg: '#000000', fg: '#f2f1ec', blend: 0.12 },
   ink: { bg: '#0f1014', fg: '#f2f1ec', blend: 0.7 },
   yellow: { bg: '#fecb56', fg: '#1e1f20', blend: 0.45 },
 }
@@ -91,6 +94,7 @@ export function BackgroundController() {
 
   useMotionValueEvent(background, 'change', (value) => {
     document.documentElement.style.setProperty('--page-bg', value)
+    document.documentElement.style.setProperty('--ground-dark', String(darkness(value)))
   })
   useMotionValueEvent(foreground, 'change', (value) => {
     document.documentElement.style.setProperty('--page-fg', value)
@@ -102,7 +106,29 @@ export function BackgroundController() {
     const root = document.documentElement
     root.style.setProperty('--page-bg', background.get())
     root.style.setProperty('--page-fg', foreground.get())
+    root.style.setProperty('--ground-dark', String(darkness(background.get())))
   }, [stops, background, foreground])
 
   return null
+}
+
+/**
+ * How dark the current ground is, 0 → 1.
+ *
+ * Published alongside the colour so anything that should only exist over a
+ * dark page — the CRT vignette, for one — can follow the ground itself rather
+ * than a hand-tuned fraction of total scroll. Those fractions silently drift
+ * every time a section changes length, which is how a vignette meant for the
+ * dark chapters ended up greying out a deliberately white one.
+ *
+ * The band is deliberately narrow: the grounds this site uses are either
+ * clearly dark or clearly light, and the only time a value falls between them
+ * is mid-blend, which is exactly when the vignette should be arriving.
+ */
+function darkness(color: string): number {
+  const parts = color.match(/[\d.]+/g)
+  if (!parts || parts.length < 3) return 0
+  const [r, g, b] = parts.map(Number) as [number, number, number]
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+  return Math.min(1, Math.max(0, (0.5 - luminance) / 0.25))
 }
