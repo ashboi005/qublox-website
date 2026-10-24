@@ -40,7 +40,7 @@ export function ErisedIntro({ progress, lead }: { progress: MotionValue<number>;
         <div className="flex flex-col items-center text-center">
           <ErisedMark progress={markProgress} />
           <motion.p
-            className="mx-auto mt-16 max-w-[44ch] font-round text-[1.1rem] leading-relaxed text-erised-ink/85 sm:text-[1.25rem]"
+            className="mx-auto mt-12 max-w-[44ch] font-round text-[1.1rem] leading-relaxed text-erised-ink/85 sm:text-[1.25rem]"
             style={reduced ? undefined : { opacity: leadOpacity }}
           >
             {lead}

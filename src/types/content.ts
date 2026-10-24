@@ -65,6 +65,10 @@ export type CommunityEvent = {
   date: string
   location: string
   blurb: string
+  /** The magazine feature. Paragraphs split on blank lines; falls back to the blurb. */
+  story?: string
+  /** Set large in the feature spread. */
+  pullQuote?: string
   status: 'upcoming' | 'past'
   seats: string
 }

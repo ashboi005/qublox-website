@@ -40,7 +40,7 @@ export const teamQuery = groq`*[_type == "teamMember"] | order(order asc){
 }`
 
 export const eventsQuery = groq`*[_type == "communityEvent"] | order(order asc){
-  _id, title, kind, date, location, blurb, status, seats
+  _id, title, kind, date, location, blurb, story, pullQuote, status, seats
 }`
 
 export const techModulesQuery = groq`*[_type == "techModule"] | order(order asc){

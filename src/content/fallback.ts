@@ -403,6 +403,9 @@ export const fallbackContent: SiteContent = {
       location: 'Qublox Studio, Amritsar',
       blurb:
         'Three works-in-progress on the projector. The people who made them have to sit through your notes.',
+      story:
+        'Three works-in-progress on the projector. The people who made them have to sit through your notes.\n\nRough Cut is the oldest thing ERISED runs. The rules have not changed since the first night: the film plays once, nobody apologises for it beforehand, and the room talks while the maker listens.\n\nBring opinions. Leave the politeness at the door — it has never once made a film better.',
+      pullQuote: 'Nobody apologises for it beforehand.',
       status: 'upcoming',
       seats: '40 SEATS',
     },
@@ -413,6 +416,9 @@ export const fallbackContent: SiteContent = {
       date: '03 OCT 2026',
       location: 'Qublox Studio, Amritsar',
       blurb: 'Bring a laptop. Leave with an agent that does one job properly and logs it.',
+      story:
+        'Bring a laptop. Leave with an agent that does one job properly and logs it.\n\nNot a demo, not a pitch. We pick small, boring jobs — renaming files, chasing invoices, sorting footage — and build something that does each one without being watched.\n\nEvery agent built on the night has to write down what it did. If it cannot explain itself, it does not go home with you.',
+      pullQuote: 'If it cannot explain itself, it does not go home with you.',
       status: 'upcoming',
       seats: '24 SEATS',
     },
@@ -423,6 +429,9 @@ export const fallbackContent: SiteContent = {
       date: '21 NOV 2026',
       location: 'Amritsar Town Hall',
       blurb: 'A night about making films with the camera you already own, and why it is enough.',
+      story:
+        'A night about making films with the camera you already own, and why it is enough.\n\nPhones, camcorders from a cupboard, a webcam taped to a broom. Four makers show what they shot on equipment nobody would rent, and walk through the decisions the limits forced on them.\n\nThe camera is the least interesting thing in the frame. This is the night we prove it.',
+      pullQuote: 'The camera is the least interesting thing in the frame.',
       status: 'upcoming',
       seats: '120 SEATS',
     },
@@ -433,6 +442,9 @@ export const fallbackContent: SiteContent = {
       date: '08 MAR 2026',
       location: 'Print run of 500',
       blurb: 'The first year of the room, set in risograph. Sold out in nine days.',
+      story:
+        'The first year of the room, set in risograph. Sold out in nine days.\n\nForty pages of notes, stills and arguments from twelve months of ERISED nights, printed in two inks on paper that smells like a school library.\n\nFive hundred copies. No reprint. If you have one, you were there.',
+      pullQuote: 'If you have one, you were there.',
       status: 'past',
       seats: 'SOLD OUT',
     },

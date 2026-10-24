@@ -8,8 +8,8 @@ import type { SiteSettings } from '@/types/content'
 export function Footer({ settings }: { settings: SiteSettings }) {
   return (
     <footer
-      data-ground="yellow"
-      className="edge-x border-t-2 border-erised-ink/25 pt-10 pb-8 text-erised-ink"
+      data-ground="deco"
+      className="edge-x border-t-2 border-deco-gold/30 bg-deco-night-deep pt-10 pb-8 text-deco-cream"
     >
       <div className="mx-auto max-w-[76rem]">
         <div className="flex flex-wrap items-end justify-between gap-8">
@@ -17,7 +17,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
             <ScrambleText
               text="QUBLOX"
               as="div"
-              className="display text-[clamp(3rem,13vw,9rem)] leading-[0.8]"
+              className="display text-[clamp(3rem,13vw,9rem)] leading-[0.8] text-deco-gold"
               dwell={420}
               stagger={62}
               playOnMount={false}
@@ -40,7 +40,7 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           </nav>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-erised-ink/25 pt-4">
+        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-deco-cream/20 pt-4">
           <span className="label opacity-55">© {new Date().getFullYear()} QUBLOX — ALL RIGHTS RESERVED</span>
           <span className="label opacity-55">{settings.footer.serial}</span>
           <a href="#hero" className="label underline-offset-4 opacity-70 hover:underline hover:opacity-100">

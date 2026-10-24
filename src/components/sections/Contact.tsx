@@ -7,8 +7,8 @@ import type { SiteSettings } from '@/types/content'
 /**
  * Contact — CH 07.
  *
- * Sits on the ERISED yellow so the page ends where the community section put
- * it, rather than flipping ground one last time for no reason. The form is
+ * Sits on the night deco ground — the indigo and neon of the Art Deco plates —
+ * so the yellow stays ERISED's own. The form is
  * deliberately plain: four fields, one action, and errors that say what to fix.
  */
 
@@ -45,15 +45,16 @@ export function Contact({ settings }: { settings: SiteSettings }) {
   return (
     <section
       id="contact"
-      data-ground="yellow"
+      data-ground="deco"
       data-channel="contact"
-      className="edge-x relative pt-[12vh] pb-[10vh]"
+      className="edge-x relative overflow-hidden pt-[12vh] pb-[10vh]"
       aria-labelledby="contact-heading"
     >
-      <div className="mx-auto max-w-[76rem] text-erised-ink">
+      <div className="deco-sky pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div className="relative mx-auto max-w-[76rem] text-deco-cream">
         <div
           className="flex items-baseline justify-between border-b pb-3"
-          style={{ borderColor: 'rgba(30,30,32,0.25)' }}
+          style={{ borderColor: 'rgba(243,231,201,0.25)' }}
         >
           <h2 id="contact-heading" className="label">
             {copy.eyebrow}
@@ -71,7 +72,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
             </p>
             <a
               href={`mailto:${settings.email}`}
-              className="mt-6 inline-block font-mono text-[1.05rem] underline decoration-2 underline-offset-4 hover:text-erised-blue"
+              className="mt-6 inline-block font-mono text-[1.05rem] underline decoration-2 underline-offset-4 text-deco-gold hover:text-deco-red"
             >
               {settings.email}
             </a>
@@ -80,7 +81,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
           <div className="md:col-span-7">
             {status.kind === 'sent' ? (
               <div
-                className="border-2 border-erised-ink bg-erised-ink p-8 text-erised-yellow"
+                className="border-2 border-deco-gold bg-deco-night-deep p-8 text-deco-gold"
                 role="status"
               >
                 <p className="font-round text-[1.6rem] leading-tight font-semibold">
@@ -105,11 +106,11 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                       id="budget"
                       name="budget"
                       defaultValue=""
-                      className="w-full appearance-none border-2 border-erised-ink bg-transparent px-3 py-2.5 text-[0.95rem] outline-none focus-visible:bg-erised-ink focus-visible:text-erised-yellow"
+                      className="w-full appearance-none border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] outline-none focus-visible:border-deco-gold"
                     >
-                      <option value="">Select a range</option>
+                      <option value="" className="bg-deco-night">Select a range</option>
                       {copy.budgets.map((budget) => (
-                        <option key={budget} value={budget}>
+                        <option key={budget} value={budget} className="bg-deco-night">
                           {budget}
                         </option>
                       ))}
@@ -127,7 +128,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                     rows={6}
                     required
                     minLength={10}
-                    className="w-full resize-y border-2 border-erised-ink bg-transparent px-3 py-2.5 text-[0.95rem] leading-relaxed outline-none placeholder:opacity-45 focus-visible:bg-erised-ink focus-visible:text-erised-yellow"
+                    className="w-full resize-y border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] leading-relaxed outline-none placeholder:opacity-45 focus-visible:border-deco-gold"
                     placeholder="A launch film, a rebrand, a site that has to do something nobody has seen. Rough is fine."
                   />
                 </div>
@@ -147,7 +148,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 <button
                   type="submit"
                   disabled={status.kind === 'sending'}
-                  className="group relative w-full border-2 border-erised-ink bg-erised-ink px-6 py-4 font-mono text-[0.85rem] tracking-[0.16em] text-erised-yellow uppercase transition-colors duration-200 hover:bg-erised-blue hover:border-erised-blue disabled:opacity-60 sm:w-auto"
+                  className="group relative w-full border-2 border-deco-red bg-deco-red px-6 py-4 font-mono text-[0.85rem] tracking-[0.16em] text-deco-cream uppercase transition-colors duration-200 hover:border-deco-gold hover:bg-deco-gold hover:text-deco-night-deep disabled:opacity-60 sm:w-auto"
                 >
                   {status.kind === 'sending' ? 'Sending…' : 'Send message'}
                 </button>
@@ -185,7 +186,7 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="w-full border-2 border-erised-ink bg-transparent px-3 py-2.5 text-[0.95rem] outline-none focus-visible:bg-erised-ink focus-visible:text-erised-yellow"
+        className="w-full border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] outline-none focus-visible:border-deco-gold"
       />
     </div>
   )

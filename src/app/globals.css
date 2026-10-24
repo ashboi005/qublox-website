@@ -44,6 +44,15 @@
   --color-erised-blue: #3a6ea5;
   --color-erised-ink: #1e1f20;
 
+  /* --- night deco: the closing chapters ------------------------------- */
+  /* Lifted from the Art Deco night plates: indigo sky, neon red, lamp gold. */
+  --color-deco-night: #150e2c;
+  --color-deco-night-deep: #0b0719;
+  --color-deco-violet: #5b3fc4;
+  --color-deco-red: #e0362c;
+  --color-deco-gold: #f3b843;
+  --color-deco-cream: #f3e7c9;
+
   /* --- type ------------------------------------------------------------- */
   --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
   --font-body: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
@@ -262,4 +271,13 @@ body {
     from { transform: translate3d(0, 0, 0); }
     to   { transform: translate3d(0, 0, 0); }
   }
+}
+
+/* Art Deco sunburst over the night ground: rays fanning up from below the
+   fold, red at the horizon, violet into the sky. Decorative only. */
+@utility deco-sky {
+  background:
+    radial-gradient(120% 70% at 50% 115%, color-mix(in srgb, var(--color-deco-red) 38%, transparent), transparent 60%),
+    radial-gradient(90% 60% at 50% -10%, color-mix(in srgb, var(--color-deco-violet) 45%, transparent), transparent 70%),
+    repeating-conic-gradient(from -90deg at 50% 120%, rgb(243 184 67 / 0.035) 0deg 3deg, transparent 3deg 9deg);
 }

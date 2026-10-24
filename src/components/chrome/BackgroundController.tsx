@@ -36,6 +36,8 @@ const GROUNDS: Record<string, Ground> = {
   void: { bg: '#000000', fg: '#f2f1ec', blend: 0.12 },
   ink: { bg: '#0f1014', fg: '#f2f1ec', blend: 0.7 },
   yellow: { bg: '#fecb56', fg: '#1e1f20', blend: 0.45 },
+  // The night deco plates: indigo sky for the reply and the sign-off.
+  deco: { bg: '#150e2c', fg: '#f3e7c9', blend: 0.6 },
 }
 
 const FALLBACK = GROUNDS.bone!

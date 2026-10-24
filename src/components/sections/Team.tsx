@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { IdCard } from '@/components/team/IdCard'
 import { useReducedMotion } from '@/lib/useReducedMotion'
 import type { TeamMember, TeamSettings } from '@/types/content'
@@ -19,10 +19,10 @@ import type { TeamMember, TeamSettings } from '@/types/content'
  * once, adding someone costs a card's width rather than a screen and a half,
  * and there is nothing to sit through.
  *
- * The first card still arrives in 3D, alone, because the section needs an
- * entrance and the plates deserve one. The rest of the rack only develops once
- * it has settled — with the crew already laid out behind it, the entrance read
- * as one card misbehaving in a row that was otherwise fine.
+ * Every card arrives the same way the first one does: swung in on its edge out
+ * of depth. The first plays alone while the rack holds still; the rest each
+ * flip in as their slot reaches the right-hand side of the screen, so the crew
+ * deals itself out one by one as you scroll rather than switching on as a row.
  *
  * The travel is measured, not assumed, and the section is exactly as tall as
  * the distance the rack has to cover — so the rack moves one pixel sideways
@@ -31,6 +31,24 @@ import type { TeamMember, TeamSettings } from '@/types/content'
 
 /** How much scroll the first card's entrance gets, as a share of a screen. */
 const ENTRANCE_VH = 0.5
+
+/** Where a card's flip begins, as a share of viewport width from the left. */
+const FLIP_AT = 0.86
+
+type Geom = {
+  start: number
+  end: number
+  /** Share of section progress the lead card's entrance takes. */
+  entranceEnd: number
+  /** Pixels the rack actually moves. */
+  distance: number
+  /** Scroll pixels after the entrance — at least `distance`, more if the flips need it. */
+  scroll: number
+  /** Scroll pixels (after the entrance) at which each card's flip begins. */
+  flipAt: number[]
+  /** Scroll pixels each flip lasts. */
+  flipSpan: number
+}
 
 export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings }) {
   const ref = useRef<HTMLElement>(null)
@@ -48,7 +66,15 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
    * mount would leave the transform interpolating against the numbers it was
    * built with. Reading a ref inside the transform keeps it current.
    */
-  const geom = useRef({ start: 0, end: 0, entranceEnd: 0.4 })
+  const geom = useRef<Geom>({
+    start: 0,
+    end: 0,
+    entranceEnd: 0.4,
+    distance: 0,
+    scroll: 0,
+    flipAt: [],
+    flipSpan: 1,
+  })
 
   useLayoutEffect(() => {
     const measure = () => {
@@ -70,8 +96,37 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
       const distance = Math.max(0, start - end)
       const entrancePx = window.innerHeight * ENTRANCE_VH
 
-      geom.current = { start, end, entranceEnd: entrancePx / (entrancePx + distance) }
-      setTravel(distance)
+      /**
+       * Each follower flips when its slot, carried by the rack, reaches
+       * FLIP_AT across the screen. Cards already past that point at rest
+       * would all fire together, so every flip is held at least most of a
+       * flip behind the one before it — the order survives on any viewport.
+       */
+      const cards = Array.from(el.children) as HTMLElement[]
+      const flipSpan = Math.max(160, lead.offsetWidth * 0.6)
+      const flipAt = cards.map((card, index) => {
+        if (index === 0) return 0
+        return start + card.offsetLeft + card.offsetWidth / 2 - window.innerWidth * FLIP_AT
+      })
+      for (let i = 1; i < flipAt.length; i++) {
+        const floor = i === 1 ? 0 : flipAt[i - 1]! + flipSpan * 0.7
+        flipAt[i] = Math.max(flipAt[i]!, floor)
+      }
+      // Wide screens can fit the crew with little travel; scroll on past it
+      // until the last card has landed.
+      const lastLanding = (flipAt[flipAt.length - 1] ?? 0) + flipSpan
+      const scroll = Math.max(distance, cards.length > 1 ? lastLanding : 0)
+
+      geom.current = {
+        start,
+        end,
+        entranceEnd: entrancePx / (entrancePx + scroll),
+        distance,
+        scroll,
+        flipAt,
+        flipSpan,
+      }
+      setTravel(scroll)
     }
 
     measure()
@@ -84,11 +139,17 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
     }
   }, [team.length])
 
+  // Scroll pixels since the lead card landed.
+  const traveled = useTransform(scrollYProgress, (p) => {
+    const { entranceEnd, scroll } = geom.current
+    if (p <= entranceEnd) return 0
+    return scroll * ((p - entranceEnd) / (1 - entranceEnd))
+  })
+
   // The rack holds still while the lead card lands, then travels.
-  const x = useTransform(scrollYProgress, (p) => {
-    const { start, end, entranceEnd } = geom.current
-    if (p <= entranceEnd) return start
-    return start + (end - start) * ((p - entranceEnd) / (1 - entranceEnd))
+  const x = useTransform(traveled, (t) => {
+    const { start, distance } = geom.current
+    return start - Math.min(t, distance)
   })
 
   // 0 → 1 across the entrance alone.
@@ -147,6 +208,8 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
               total={team.length}
               copy={copy}
               entrance={entrance}
+              traveled={traveled}
+              geom={geom}
             />
           ))}
         </motion.div>
@@ -174,12 +237,8 @@ function Heading({ copy }: { copy: TeamSettings }) {
 }
 
 /**
- * A card on the rack.
- *
- * Only the lead card animates in 3D. The rest simply develop in behind it once
- * it has landed, one just after another — enough of a stagger to read as a
- * rack filling rather than a row switching on, and nothing more. A queue of
- * cards each performing its own entrance is the thing this section replaced.
+ * A card on the rack. Every card plays the same flight; the lead's is driven
+ * by the entrance, each follower's by how far the rack has carried it.
  */
 function RackCard({
   member,
@@ -187,34 +246,32 @@ function RackCard({
   total,
   copy,
   entrance,
+  traveled,
+  geom,
 }: {
   member: TeamMember
   index: number
   total: number
   copy: TeamSettings
   entrance: MotionValue<number>
+  traveled: MotionValue<number>
+  geom: RefObject<Geom>
 }) {
-  const lead = index === 0
+  const flip = useTransform(index === 0 ? entrance : traveled, (value) => {
+    if (index === 0) return value
+    const { flipAt, flipSpan } = geom.current
+    const begin = flipAt[index] ?? 0
+    return Math.min(1, Math.max(0, (value - begin) / flipSpan))
+  })
 
-  // The lead card's flight.
-  const rotateY = useTransform(entrance, [0, 1], [-72, 0])
-  const z = useTransform(entrance, [0, 1], [-900, 0])
-  const leadOpacity = useTransform(entrance, [0, 0.55], [0, 1])
-
-  // The rest, after it settles. Clamped so a large crew still finishes inside
-  // the entrance rather than trailing into the travel.
-  const from = Math.min(0.94, 0.7 + index * 0.05)
-  const restOpacity = useTransform(entrance, [from, Math.min(1, from + 0.12)], [0, 1])
-  const restY = useTransform(entrance, [from, Math.min(1, from + 0.12)], [18, 0])
+  const rotateY = useTransform(flip, [0, 1], [-72, 0])
+  const z = useTransform(flip, [0, 1], [-900, 0])
+  const opacity = useTransform(flip, [0, 0.55], [0, 1])
 
   return (
     <motion.div
       className="shrink-0"
-      style={
-        lead
-          ? { rotateY, z, opacity: leadOpacity, transformStyle: 'preserve-3d' }
-          : { opacity: restOpacity, y: restY }
-      }
+      style={{ rotateY, z, opacity, transformStyle: 'preserve-3d' }}
     >
       <IdCard member={member} index={index} total={total} copy={copy} />
     </motion.div>
