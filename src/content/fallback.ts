@@ -13,6 +13,7 @@ export const fallbackContent: SiteContent = {
       { id: 'about', label: 'CH 02', name: 'STUDIO' },
       { id: 'work', label: 'CH 03', name: 'MEDIA' },
       { id: 'tech', label: 'CH 04', name: 'TECH' },
+      { id: 'lokey', label: 'FEAT', name: 'LOKEY' },
       { id: 'team', label: 'CH 05', name: 'CREW' },
       { id: 'contact', label: 'CH 06', name: 'CONTACT' },
     ],

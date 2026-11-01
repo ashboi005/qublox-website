@@ -40,7 +40,23 @@ export function Footer({ settings }: { settings: SiteSettings }) {
           </nav>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-deco-cream/20 pt-4">
+        {/* The flagship — the one product that gets its own broadcast on this page. */}
+        <a
+          href="https://lokey.qubloxhq.com"
+          target="_blank"
+          rel="noreferrer noopener"
+          className="group mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-deco-cream/20 pt-6"
+        >
+          <span className="label opacity-55">Flagship product</span>
+          <span className="flex items-center gap-3">
+            <span className="display text-[clamp(1.4rem,4vw,2.4rem)] leading-none text-deco-red">LOKEY</span>
+            <span className="label opacity-70 transition-opacity group-hover:opacity-100">
+              lokey.qubloxhq.com ↗
+            </span>
+          </span>
+        </a>
+
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-deco-cream/20 pt-4">
           <span className="label opacity-55">© {new Date().getFullYear()} QUBLOX — ALL RIGHTS RESERVED</span>
           <span className="label opacity-55">{settings.footer.serial}</span>
           <a href="#hero" className="label underline-offset-4 opacity-70 hover:underline hover:opacity-100">

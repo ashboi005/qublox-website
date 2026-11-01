@@ -6,6 +6,7 @@ import { Clapperboard } from '@/components/media/Clapperboard'
 import { Media } from '@/components/sections/Media'
 import { Team } from '@/components/sections/Team'
 import { Machine } from '@/components/sections/Machine'
+import { Featured } from '@/components/sections/Featured'
 import { BackgroundController } from '@/components/chrome/BackgroundController'
 import { Header } from '@/components/chrome/Header'
 import { SmoothScroll } from '@/components/providers/SmoothScroll'
@@ -40,6 +41,8 @@ export default async function Page() {
         <Media projects={projects} copy={settings.media} />
         {/* CH 04 — the machine, cold start to running */}
         <Machine settings={settings} />
+        {/* FEATURED — the one broadcast that breaks the lineup: Lokey, shipped and live */}
+        <Featured />
         {/* CH 05 — the crew */}
         <Team team={team} copy={settings.team} />
         {/* CH 06 — the reply */}
