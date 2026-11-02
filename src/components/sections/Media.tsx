@@ -14,7 +14,14 @@ import { useRef, useState } from 'react'
 import { MovieCamera } from '@/components/media/MovieCamera'
 import { Prism } from '@/components/media/Prism'
 import { ProjectPlate } from '@/components/media/ProjectPlate'
-import { useTrailPath } from '@/components/media/useTrailPath'
+import {
+  EASE_IN_OUT,
+  LINEAR,
+  SCRUB_IN,
+  SCRUB_OUT,
+  useEasedRange,
+  useTrailPath,
+} from '@/components/media/useTrailPath'
 import { sampleAt, type PathSample } from '@/lib/path'
 import { ramp } from '@/lib/range'
 import { useReducedMotion } from '@/lib/useReducedMotion'
@@ -71,7 +78,11 @@ const ARRIVE = 0.82
 const PRISM_IN = 0.46
 
 const CARD_MAX = 340
-const TOP_PAD = 120
+/**
+ * Clear of the chapter head, which sits below the site header's scrim: set
+ * inside the scrim, the head was washed to grey by it.
+ */
+const TOP_PAD = 208
 const BOTTOM_PAD = 88
 /** Space between a frame's leading edge and the beam it hangs from. */
 const CARD_GUTTER = 24
@@ -124,7 +135,14 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
 
   const camX = useTransform(pathT, (t) => sampleAt(samples, t).x)
   const camY = useTransform(pathT, (t) => sampleAt(samples, t).y)
-  const camScale = useScrollRange(travel, [0, 0.12, ARRIVE, 1], [0.18, 0.82, 0.82, 0.72])
+  // The camera's scale, the peel and the reveals all ride eased ranges: a
+  // linear ramp starts and stops dead at its edges, which is the pop.
+  const camScale = useEasedRange(
+    travel,
+    [0, 0.12, ARRIVE, 1],
+    [0.18, 0.82, 0.82, 0.72],
+    [SCRUB_OUT, LINEAR, EASE_IN_OUT],
+  )
   // The camera reaches the glass at the end of the run and hands the beam
   // over. Leaving it sitting on top of the prism buries the one moment the
   // whole section has been building to.
@@ -137,10 +155,11 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
    * glass on its own, which is what the rest of the section has been setting
    * up.
    */
-  const camOpacity = useScrollRange(travel, [ARRIVE - 0.2, ARRIVE - 0.06], [1, 0])
-  const camPeelY = useScrollRange(travel, [ARRIVE - 0.2, ARRIVE], [0, -280])
-  const camPeelX = useScrollRange(travel, [ARRIVE - 0.2, ARRIVE], [0, 110])
-  const camPeelSpin = useScrollRange(travel, [ARRIVE - 0.2, ARRIVE], [0, -28])
+  // An exit: it eases off its line and accelerates away, fading as it goes.
+  const camOpacity = useEasedRange(travel, [ARRIVE - 0.2, ARRIVE - 0.06], [1, 0], EASE_IN_OUT)
+  const camPeelY = useEasedRange(travel, [ARRIVE - 0.2, ARRIVE], [0, -280], SCRUB_IN)
+  const camPeelX = useEasedRange(travel, [ARRIVE - 0.2, ARRIVE], [0, 110], SCRUB_IN)
+  const camPeelSpin = useEasedRange(travel, [ARRIVE - 0.2, ARRIVE], [0, -28], SCRUB_IN)
   const camRotate = useTransform(pathT, (t) => sampleAt(samples, t).angle * 0.5)
 
   // The glass arrives early and waits; the spectrum only opens once the beam
@@ -162,7 +181,7 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
       id="work"
       data-ground="void"
       data-channel="work"
-      className="relative h-[560vh]"
+      className="relative h-[560svh]"
       aria-labelledby="work-heading"
     >
       {/*
@@ -172,10 +191,7 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
         through the seam for the screen's worth of scroll between the slate
         unpinning and the ground blend reaching black.
       */}
-      <div ref={stageRef} className="sticky top-0 h-[100svh] overflow-hidden bg-black">
-        <h2 id="work-heading" className="sr-only">
-          Selected work
-        </h2>
+      <div ref={stageRef} className="sticky top-0 h-[100svh] overflow-hidden bg-void">
 
         {/* ---- the track: everything that travels sideways --------------- */}
         <motion.div
@@ -212,8 +228,8 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
                   <motion.path
                     d={d}
                     fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="4.5"
+                    className="stroke-on-void"
+                    strokeWidth="4"
                     strokeLinecap="round"
                     filter="url(#beam)"
                     style={{ strokeDasharray: length, strokeDashoffset: reduced ? 0 : dashOffset }}
@@ -263,7 +279,10 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
                 translateY: '-58%',
                 scale: camScale,
                 rotate: camRotate,
-                filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.5))',
+                // A faint spill of the beam's own light on the housing; the
+                // line art carries the shape, not a halo.
+                filter:
+                  'drop-shadow(0 0 14px color-mix(in oklab, var(--color-on-void) 28%, transparent))',
               }}
             >
               <motion.div
@@ -276,22 +295,31 @@ export function Media({ projects, copy }: { projects: Project[]; copy: MediaSett
         </motion.div>
 
         {/* ---- section chrome, fixed to the viewport ------------------- */}
-        <div className="edge-x pointer-events-none absolute inset-x-0 top-0 z-40 pt-24">
-          <div className="rule-b flex items-baseline justify-between pb-3 text-bone/45">
-            <span className="label">{copy.eyebrow}</span>
-            <span className="label">{copy.yearRange}</span>
+        {/*
+          The chapter's head, set as the title of the reel: the heading itself
+          in the display face, the years beside it as the reel's folio. No
+          label sits over it announcing it.
+        */}
+        <div className="edge-x pointer-events-none absolute inset-x-0 top-0 z-40 pt-28">
+          <div className="rule-b flex items-baseline justify-between gap-6 pb-3 text-on-void-muted">
+            <h2
+              id="work-heading"
+              className="section-head text-on-void"
+            >
+              {copy.eyebrow}
+            </h2>
+            <p className="label tabular-nums">{copy.yearRange}</p>
           </div>
         </div>
 
+        {/* the viewfinder's own readouts, along the bottom of the gate */}
         <div className="edge-x pointer-events-none absolute inset-x-0 bottom-0 z-40 pb-6">
-          <div className="rule-t flex items-baseline justify-between pt-3 text-bone/45">
-            <span className="label">
-              <span className="text-signal">●</span> {copy.recLabel}
+          <div className="rule-t grid grid-cols-[1fr_auto_1fr] items-baseline gap-4 pt-3 text-on-void-muted">
+            <span className="readout text-signal">{copy.recLabel}</span>
+            <span className="readout">
+              frame {String(frameNumber).padStart(4, '0')} / 0240
             </span>
-            <span className="label tabular-nums">
-              FRAME {String(frameNumber).padStart(4, '0')} / 0240
-            </span>
-            <span className="label hidden sm:inline">{copy.formatLabel}</span>
+            <span className="readout hidden justify-self-end sm:inline">{copy.formatLabel}</span>
           </div>
         </div>
       </div>
@@ -305,7 +333,7 @@ function Sprockets() {
   return (
     <div aria-hidden="true" className="flex w-3 shrink-0 flex-col justify-around py-1">
       {Array.from({ length: 6 }, (_, i) => (
-        <span key={i} className="h-2 w-full rounded-[1px] bg-[#26282c]" />
+        <span key={i} className="h-2 w-full rounded-[1.5px] bg-void" />
       ))}
     </div>
   )
@@ -352,10 +380,13 @@ function TrailFrame({
   ])
   const [enter, settled] = [beats[0]!, beats[1]!]
 
-  const opacity = useScrollRange(travel, beats, [0, 1, 1, 0])
-  const scale = useScrollRange(travel, [enter, settled], [0.84, 1])
-  const blur = useScrollRange(travel, [enter, settled], [9, 0])
-  const filter = useTransform(blur, (value) => `blur(${value}px)`)
+  // Develops in on a long deceleration, holds, then falls away on an
+  // acceleration: the same curve family as everything else on the site.
+  const opacity = useEasedRange(travel, beats, [0, 1, 1, 0], [SCRUB_OUT, LINEAR, SCRUB_IN])
+  const scale = useEasedRange(travel, [enter, settled], [0.9, 1], SCRUB_OUT)
+  const blur = useEasedRange(travel, [enter, settled], [6, 0], SCRUB_OUT)
+  // Dropped entirely once in focus, so a settled frame is not re-filtered.
+  const filter = useTransform(blur, (value) => (value < 0.05 ? 'none' : `blur(${value.toFixed(2)}px)`))
 
   /**
    * Which side of the beam the card hangs off follows the wave, not the CMS.
@@ -394,14 +425,14 @@ function TrailFrame({
       {/* the connector, running from the frame's leading edge back to the beam */}
       <span
         aria-hidden="true"
-        className={`absolute right-6 h-7 w-px bg-gradient-to-b from-transparent to-white/70 ${
+        className={`absolute right-6 h-7 w-px bg-gradient-to-b from-transparent to-on-void/60 ${
           above ? 'top-full' : 'bottom-full rotate-180'
         }`}
       />
 
-      <div className="bg-[#07080a] shadow-[0_0_0_1px_rgba(242,241,236,0.22),0_30px_70px_-28px_rgba(0,0,0,1)]">
+      <div className="rounded-[2px] bg-void-2 shadow-lift ring-1 ring-on-void/15">
         {/* the frame, with the sprocket strips a 16mm frame actually has */}
-        <div className="flex items-stretch gap-1 bg-[#0d0e11] p-1">
+        <div className="flex items-stretch gap-1 rounded-t-[2px] bg-void-3 p-1">
           <Sprockets />
           <div className="relative flex-1 overflow-hidden">
             <div className="relative aspect-[16/10]">
@@ -414,7 +445,13 @@ function TrailFrame({
                   className="object-cover"
                 />
               ) : (
-                <ProjectPlate plate={project.plate} label={project.title} />
+                <ProjectPlate
+                  plate={project.plate}
+                  label={project.title}
+                  client={project.client}
+                  year={project.year}
+                  discipline={project.discipline}
+                />
               )}
             </div>
           </div>
@@ -422,21 +459,21 @@ function TrailFrame({
         </div>
 
         {/* the caption, set like a can label */}
-        <div className="px-3 pt-2.5 pb-3">
-          <div className="flex items-baseline justify-between gap-3 border-b border-white/12 pb-1.5">
-            <span className="label text-white/40 tabular-nums">
-              ROLL {String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="label text-white/40">{project.year}</span>
+        <div className="px-3.5 pt-2.5 pb-3.5">
+          <div className="flex items-baseline justify-between gap-3 border-b border-on-void/12 pb-2 text-on-void-muted">
+            <span className="readout">roll {String(index + 1).padStart(2, '0')}</span>
+            <span className="readout">{project.year}</span>
           </div>
 
-          <h3 className="mt-2.5 text-[1.05rem] leading-tight font-medium tracking-[-0.015em] text-bone">
+          <h3 className="mt-2.5 font-display text-[1.125rem] leading-tight font-semibold tracking-[-0.015em] text-on-void">
             {project.title}
           </h3>
-          <p className="label mt-1 text-dos-cyan/85">
-            {project.client} · {project.discipline}
+          <p className="label mt-1 flex items-center gap-2.5">
+            <span className="text-on-void">{project.client}</span>
+            <span aria-hidden="true" className="h-3 w-px bg-on-void/25" />
+            <span className="text-dos-cyan">{project.discipline}</span>
           </p>
-          <p className="mt-2 text-[0.8rem] leading-[1.6] text-bone/55">{project.blurb}</p>
+          <p className="mt-2 text-sm leading-normal text-on-void-muted">{project.blurb}</p>
         </div>
       </div>
     </motion.article>

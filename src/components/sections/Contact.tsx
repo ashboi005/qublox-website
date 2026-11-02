@@ -52,27 +52,21 @@ export function Contact({ settings }: { settings: SiteSettings }) {
     >
       <div className="deco-sky pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="relative mx-auto max-w-[76rem] text-deco-cream">
-        <div
-          className="flex items-baseline justify-between border-b pb-3"
-          style={{ borderColor: 'rgba(243,231,201,0.25)' }}
-        >
-          <h2 id="contact-heading" className="label">
-            {copy.eyebrow}
-          </h2>
-          <span className="label">{copy.replyNote}</span>
-        </div>
-
-        <div className="mt-10 grid gap-12 md:grid-cols-12">
+        <div className="grid gap-12 border-t border-deco-cream/15 pt-12 md:grid-cols-12">
           <div className="md:col-span-5">
-            <StretchHeading className="text-[clamp(2.4rem,7vw,5rem)]" from={64} to={112}>
+            <StretchHeading
+              id="contact-heading"
+              className="text-[clamp(2.6rem,7vw,5.25rem)] text-deco-cream"
+              from={64}
+              to={112}
+            >
               {copy.title}
             </StretchHeading>
-            <p className="mt-6 max-w-[38ch] text-[0.98rem] leading-[1.75] opacity-80">
-              {copy.lead}
-            </p>
+            <p className="mt-6 max-w-[38ch] text-lg leading-[1.6] text-deco-cream">{copy.lead}</p>
+            <p className="label mt-2 text-deco-muted">{copy.replyNote}</p>
             <a
               href={`mailto:${settings.email}`}
-              className="mt-6 inline-block font-mono text-[1.05rem] underline decoration-2 underline-offset-4 text-deco-gold hover:text-deco-red"
+              className="mt-8 inline-flex min-h-11 items-center font-mono text-lg text-deco-gold underline decoration-1 underline-offset-[6px] transition-colors duration-[var(--dur-short)] ease-out hover:text-deco-cream"
             >
               {settings.email}
             </a>
@@ -81,13 +75,13 @@ export function Contact({ settings }: { settings: SiteSettings }) {
           <div className="md:col-span-7">
             {status.kind === 'sent' ? (
               <div
-                className="border-2 border-deco-gold bg-deco-night-deep p-8 text-deco-gold"
+                className="rounded-[6px] border border-deco-gold/50 bg-deco-night-deep p-8 text-deco-gold"
                 role="status"
               >
-                <p className="font-round text-[1.6rem] leading-tight font-semibold">
+                <p className="font-display text-xl leading-tight font-extrabold">
                   {copy.successTitle}
                 </p>
-                <p className="mt-2 text-[0.95rem] leading-relaxed opacity-80">{copy.successBody}</p>
+                <p className="mt-2 text-md leading-[1.6] text-deco-cream">{copy.successBody}</p>
               </div>
             ) : (
               <form onSubmit={onSubmit} className="space-y-5" noValidate>
@@ -99,14 +93,14 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 <div className="grid gap-5 sm:grid-cols-2">
                   <Field name="company" label="Company" autoComplete="organization" />
                   <div>
-                    <label htmlFor="budget" className="label mb-2 block opacity-70">
+                    <label htmlFor="budget" className="label mb-2 block text-deco-muted">
                       Budget
                     </label>
                     <select
                       id="budget"
                       name="budget"
                       defaultValue=""
-                      className="w-full appearance-none border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] outline-none focus-visible:border-deco-gold"
+                      className="min-h-12 w-full appearance-none rounded-[4px] border border-deco-muted/70 bg-deco-night-deep/50 px-3.5 py-2.5 text-md text-deco-cream outline-offset-0 transition-colors duration-[var(--dur-short)] ease-out hover:border-deco-cream"
                     >
                       <option value="" className="bg-deco-night">Select a range</option>
                       {copy.budgets.map((budget) => (
@@ -119,7 +113,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="label mb-2 block opacity-70">
+                  <label htmlFor="message" className="label mb-2 block text-deco-muted">
                     What are you making?
                   </label>
                   <textarea
@@ -128,7 +122,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                     rows={6}
                     required
                     minLength={10}
-                    className="w-full resize-y border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] leading-relaxed outline-none placeholder:opacity-45 focus-visible:border-deco-gold"
+                    className="w-full resize-y rounded-[4px] border border-deco-muted/70 bg-deco-night-deep/50 px-3.5 py-3 text-md leading-[1.6] text-deco-cream outline-offset-0 transition-colors duration-[var(--dur-short)] ease-out placeholder:text-deco-muted/80 hover:border-deco-cream"
                     placeholder="A launch film, a rebrand, a site that has to do something nobody has seen. Rough is fine."
                   />
                 </div>
@@ -140,7 +134,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 </div>
 
                 {status.kind === 'error' && (
-                  <p role="alert" className="border-2 border-signal bg-signal/10 px-3 py-2.5 text-[0.9rem]">
+                  <p role="alert" className="rounded-[4px] border border-deco-red bg-deco-red/15 px-3.5 py-3 text-md text-deco-cream">
                     {status.message}
                   </p>
                 )}
@@ -148,7 +142,7 @@ export function Contact({ settings }: { settings: SiteSettings }) {
                 <button
                   type="submit"
                   disabled={status.kind === 'sending'}
-                  className="group relative w-full border-2 border-deco-red bg-deco-red px-6 py-4 font-mono text-[0.85rem] tracking-[0.16em] text-deco-cream uppercase transition-colors duration-200 hover:border-deco-gold hover:bg-deco-gold hover:text-deco-night-deep disabled:opacity-60 sm:w-auto"
+                  className="relative inline-flex min-h-12 w-full items-center justify-center rounded-[4px] bg-accent-deep px-7 text-md font-semibold whitespace-nowrap text-on-accent-deep transition-[background-color,color,transform] duration-[var(--dur-short)] ease-out hover:bg-deco-gold hover:text-deco-night-deep active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto"
                 >
                   {status.kind === 'sending' ? 'Sending…' : 'Send message'}
                 </button>
@@ -176,7 +170,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={name} className="label mb-2 block opacity-70">
+      <label htmlFor={name} className="label mb-2 block text-deco-muted">
         {label}
         {required && <span aria-hidden="true"> *</span>}
       </label>
@@ -186,7 +180,7 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="w-full border-2 border-deco-cream/40 bg-deco-night-deep/40 px-3 py-2.5 text-[0.95rem] outline-none focus-visible:border-deco-gold"
+        className="min-h-12 w-full rounded-[4px] border border-deco-muted/70 bg-deco-night-deep/50 px-3.5 py-2.5 text-md text-deco-cream outline-offset-0 transition-colors duration-[var(--dur-short)] ease-out hover:border-deco-cream"
       />
     </div>
   )

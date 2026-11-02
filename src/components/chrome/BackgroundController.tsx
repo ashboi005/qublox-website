@@ -23,9 +23,12 @@ import { useLayoutEffect, useState } from 'react'
 
 type Ground = { bg: string; fg: string; blend: number }
 
+// Hex mirrors of the ground tokens in tokens.css (Motion interpolates hex and
+// rgb, not OKLCH). Change one, change both.
+
 const GROUNDS: Record<string, Ground> = {
   // `blend` is the fraction of a viewport over which this ground arrives.
-  bone: { bg: '#f2f1ec', fg: '#0f1014', blend: 0.7 },
+  bone: { bg: '#f2f0eb', fg: '#0f1015', blend: 0.7 },
   // The lights going down before the camera runs. Short: this is a cut, not a
   // dissolve, and it must be finished before the section it belongs to
   // arrives — a fade still running while the camera is under way reads as a
@@ -33,11 +36,11 @@ const GROUNDS: Record<string, Ground> = {
   // Short on purpose. The slate covers the frame while this happens, so the
   // ground flips behind it — the clap is the cut, and a long dissolve either
   // side of it would show the page changing its mind before the board lands.
-  void: { bg: '#000000', fg: '#f2f1ec', blend: 0.12 },
-  ink: { bg: '#0f1014', fg: '#f2f1ec', blend: 0.7 },
-  yellow: { bg: '#fecb56', fg: '#1e1f20', blend: 0.45 },
+  void: { bg: '#040509', fg: '#e9e8e2', blend: 0.12 },
+  ink: { bg: '#0f1015', fg: '#e9e8e2', blend: 0.7 },
+  yellow: { bg: '#ffc95b', fg: '#1b1c1e', blend: 0.45 },
   // The night deco plates: indigo sky for the reply and the sign-off.
-  deco: { bg: '#150e2c', fg: '#f3e7c9', blend: 0.6 },
+  deco: { bg: '#140d2c', fg: '#f4e6ca', blend: 0.6 },
 }
 
 const FALLBACK = GROUNDS.bone!

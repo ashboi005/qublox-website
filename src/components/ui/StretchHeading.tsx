@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
 /**
  * Archivo's width axis is the display voice of this site. Headings enter
  * condensed and open out to full width as they cross the viewport, so the
- * type itself does the revealing — no fade-up required.
+ * type itself does the revealing; no fade-up required.
  */
 export function StretchHeading({
   children,
@@ -16,12 +16,14 @@ export function StretchHeading({
   from = 66,
   to = 118,
   as: Tag = 'h2',
+  id,
 }: {
   children: React.ReactNode
   className?: string
   from?: number
   to?: number
   as?: 'h1' | 'h2' | 'h3'
+  id?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
@@ -30,12 +32,13 @@ export function StretchHeading({
   })
 
   const wdth = useScrollRange(scrollYProgress, [0, 1], [from, to])
-  const opacity = useScrollRange(scrollYProgress, [0, 0.5], [0.25, 1])
+  const opacity = useScrollRange(scrollYProgress, [0, 0.55], [0.3, 1])
   const MotionTag = motion[Tag]
 
   return (
     <div ref={ref}>
       <MotionTag
+        id={id}
         className={cn('display', className)}
         style={{ ['--wdth' as string]: wdth, opacity }}
       >

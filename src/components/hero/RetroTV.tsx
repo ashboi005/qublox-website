@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 /**
  * A 1970s portable television set, built out of layered gradients rather than
  * a raster image so it stays crisp at any size and can be lit from behind.
@@ -10,7 +12,22 @@
  * card and a speaker grille. The screen corners are barrel-rounded and the
  * glass carries a bulge highlight, which is what separates a CRT from a
  * rectangle with scanlines on it.
+ *
+ * Every surface is lit from the top left: highlights on upper edges, the
+ * deepest tone at the lower right, and one lift shadow under the cabinet. All
+ * colours come from the set's tokens (wood, panel, glass), mixed rather than
+ * typed, so the object stays in the site's palette.
  */
+
+/** A token mixed toward another colour (or toward transparent, for alpha). */
+function tone(token: string, pct: number, toward = 'transparent'): string {
+  const into = toward === 'transparent' ? toward : `var(--color-${toward})`
+  return `color-mix(in oklab, var(--color-${token}) ${pct}%, ${into})`
+}
+
+/** Degrees the channel knob turns per channel. */
+const STEP_DEG = 34
+
 export function RetroTV({
   children,
   brand,
@@ -33,6 +50,21 @@ export function RetroTV({
   onTune: (direction: number) => void
   onPower: () => void
 }) {
+  /*
+    The knob keeps turning the same way round when the set wraps from its last
+    channel back to the first (or the reverse), instead of unwinding most of a
+    full turn backwards. `offset` counts the whole turns, in channel steps.
+  */
+  const [dial, setDial] = useState({ index: channelIndex, offset: 0 })
+  if (dial.index !== channelIndex) {
+    const delta = channelIndex - dial.index
+    let offset = dial.offset
+    if (channelIndex === 0 && delta < -1) offset += dial.index + 1
+    else if (dial.index === 0 && delta > 1) offset -= channelIndex + 1
+    setDial({ index: channelIndex, offset })
+  }
+  const knobAngle = (channelIndex + dial.offset) * STEP_DEG
+
   return (
     <div className="relative w-[min(80vw,46rem)]">
       {/* ---- antenna --------------------------------------------------- */}
@@ -41,24 +73,38 @@ export function RetroTV({
         viewBox="0 0 200 130"
         className="absolute -top-[16%] left-[40%] h-[18%] w-[52%] -translate-x-1/2 overflow-visible"
       >
-        <g stroke="#8d8478" strokeLinecap="round">
-          <path d="M100 128 L44 12" strokeWidth="3" />
-          <path d="M100 128 L158 26" strokeWidth="3" />
+        <g strokeLinecap="round" style={{ stroke: tone('set-panel', 62, 'set-wood') }}>
+          <path d="M100 128 L44 12" strokeWidth="2.6" />
+          <path d="M100 128 L158 26" strokeWidth="2.6" />
         </g>
-        <circle cx="44" cy="12" r="5" fill="#a49a8b" />
-        <circle cx="158" cy="26" r="5" fill="#a49a8b" />
+        {/* a hairline of light along each rod, from the upper left */}
+        <g strokeLinecap="round" style={{ stroke: tone('paper', 55) }}>
+          <path d="M99 126 L43.4 13" strokeWidth="0.8" />
+          <path d="M99 126 L157 27" strokeWidth="0.8" />
+        </g>
+        <circle cx="44" cy="12" r="4.5" style={{ fill: tone('set-panel', 80, 'set-wood') }} />
+        <circle cx="158" cy="26" r="4.5" style={{ fill: tone('set-panel', 80, 'set-wood') }} />
         {/* the base the rods pivot in */}
-        <ellipse cx="100" cy="128" rx="13" ry="6" fill="#211d19" />
+        <ellipse cx="100" cy="128" rx="14" ry="6" style={{ fill: 'var(--color-set-wood-deep)' }} />
+        <ellipse cx="100" cy="126.4" rx="9" ry="2.6" style={{ fill: tone('set-wood', 80, 'set-panel') }} />
       </svg>
 
       {/* ---- cabinet ---------------------------------------------------- */}
       <div
         className="relative rounded-[1.4rem] p-[2.6%]"
         style={{
-          background:
-            'linear-gradient(158deg,#4b433a 0%,#332c25 26%,#241e19 58%,#191410 100%)',
-          boxShadow:
-            'inset 0 2px 0 rgba(255,255,255,0.16), inset 0 -3px 6px rgba(0,0,0,0.7), 0 46px 90px -36px rgba(16,17,20,0.65)',
+          background: [
+            // a very faint figure in the veneer, so the wood is not a flat fill
+            `repeating-linear-gradient(97deg, transparent 0 11px, ${tone('set-wood-deep', 22)} 11px 12px, transparent 12px 23px, ${tone('set-panel', 4)} 23px 24px, transparent 24px 37px)`,
+            `linear-gradient(158deg, ${tone('set-wood', 78, 'set-panel')} 0%, var(--color-set-wood) 28%, var(--color-set-wood-deep) 64%, ${tone('set-wood-deep', 72, 'void')} 100%)`,
+          ].join(', '),
+          boxShadow: [
+            `inset 0 1.5px 0 ${tone('set-panel', 26)}`,
+            `inset 1.5px 0 0 ${tone('set-panel', 10)}`,
+            `inset 0 -3px 6px ${tone('void', 70)}`,
+            `0 2px 3px ${tone('void', 30)}`,
+            'var(--shadow-lift)',
+          ].join(', '),
         }}
       >
         <div className="flex gap-[2.4%]">
@@ -68,20 +114,24 @@ export function RetroTV({
             <div
               className="relative rounded-[1.1rem] p-[3.6%]"
               style={{
-                background: 'linear-gradient(165deg,#2a241e 0%,#15110d 70%)',
-                boxShadow:
-                  'inset 0 0 0 1px rgba(255,255,255,0.07), inset 0 6px 14px rgba(0,0,0,0.85)',
+                background: `linear-gradient(165deg, ${tone('set-wood-deep', 86, 'set-panel')} 0%, ${tone('set-wood-deep', 62, 'void')} 72%)`,
+                boxShadow: [
+                  `inset 0 0 0 1px ${tone('on-void', 7)}`,
+                  `inset 0 6px 14px ${tone('void', 85)}`,
+                  // the lower lip of the bezel catches the light
+                  `inset 0 -1px 0 ${tone('set-panel', 12)}`,
+                ].join(', '),
               }}
             >
               {/* the tube */}
               <div
-                className="relative isolate overflow-hidden bg-[#050505]"
+                className="relative isolate overflow-hidden"
                 style={{
                   aspectRatio: '4 / 3',
+                  background: tone('set-glass', 50, 'void'),
                   // A CRT's corners are barrel-rounded, not uniformly radiused.
                   borderRadius: '14% / 18%',
-                  boxShadow:
-                    'inset 0 0 70px 26px rgba(0,0,0,0.95), inset 0 0 16px 3px rgba(59,255,168,0.10)',
+                  boxShadow: `inset 0 0 70px 26px ${tone('void', 95)}, inset 0 0 16px 3px ${tone('phosphor', 10)}`,
                 }}
               >
                 {children}
@@ -91,8 +141,7 @@ export function RetroTV({
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-20"
                   style={{
-                    background:
-                      'radial-gradient(78% 58% at 50% 42%, rgba(59,255,168,0.10), transparent 72%)',
+                    background: `radial-gradient(78% 58% at 50% 42%, ${tone('phosphor', 9)}, transparent 72%)`,
                   }}
                 />
 
@@ -105,9 +154,8 @@ export function RetroTV({
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-x-0 z-30 h-[20%]"
                   style={{
-                    background:
-                      'linear-gradient(to bottom, transparent, rgba(255,255,255,0.05) 45%, transparent)',
-                    animation: 'crt-roll 8s linear infinite',
+                    background: `linear-gradient(to bottom, transparent, ${tone('on-void', 4)} 45%, transparent)`,
+                    animation: 'crt-roll 11s linear infinite',
                   }}
                 />
 
@@ -116,16 +164,14 @@ export function RetroTV({
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-40"
                   style={{
-                    background:
-                      'radial-gradient(58% 42% at 30% 22%, rgba(255,255,255,0.16), rgba(255,255,255,0.04) 46%, transparent 68%)',
+                    background: `radial-gradient(58% 42% at 30% 22%, ${tone('on-void', 14)}, ${tone('on-void', 4)} 46%, transparent 68%)`,
                   }}
                 />
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 z-40"
                   style={{
-                    background:
-                      'linear-gradient(122deg, rgba(255,255,255,0.10) 0%, transparent 34%)',
+                    background: `linear-gradient(122deg, ${tone('on-void', 9)} 0%, transparent 34%)`,
                   }}
                 />
               </div>
@@ -134,83 +180,125 @@ export function RetroTV({
 
           {/* ---- control column ---------------------------------------- */}
           <div
-            className="flex w-[19%] shrink-0 flex-col items-center rounded-[0.8rem] px-[4%] py-[3.5%]"
+            className="flex w-[19%] shrink-0 flex-col items-center rounded-[0.8rem] px-[4%] py-[3.5%] max-sm:w-[22%] max-sm:px-[2.5%]"
             style={{
-              background: 'linear-gradient(168deg,#d8cfba 0%,#bcb29b 46%,#9d9380 100%)',
-              boxShadow:
-                'inset 0 1px 0 rgba(255,255,255,0.65), inset 0 -2px 5px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.4)',
+              background: [
+                // brushed: fine vertical grain in the panel's lacquer
+                `repeating-linear-gradient(90deg, ${tone('paper', 7)} 0 1px, transparent 1px 3px)`,
+                `linear-gradient(168deg, ${tone('set-panel', 64, 'paper')} 0%, var(--color-set-panel) 46%, ${tone('set-panel', 78, 'set-wood')} 100%)`,
+              ].join(', '),
+              boxShadow: [
+                `inset 0 1px 0 ${tone('paper', 70)}`,
+                `inset 0 -2px 5px ${tone('void', 24)}`,
+                `0 2px 6px ${tone('void', 38)}`,
+              ].join(', '),
             }}
           >
             <Dial
-              label="CH"
+              label="ch"
               ticks={13}
               big
-              // A quarter of the ring per channel, so the pointer visibly
-              // steps round rather than creeping.
-              angle={channelIndex * 34}
+              // A step of the ring per channel, so the pointer visibly steps
+              // round rather than creeping.
+              angle={knobAngle}
               onStep={onTune}
               title="Change channel"
             />
-            <Dial label="VOL" ticks={9} />
+            {/* The volume dial and the grille are furniture; on a phone the
+                column is too narrow for them beside readable readouts, so
+                they step aside and the set keeps its proportions. */}
+            <div className="contents max-sm:hidden">
+              <Dial label="vol" ticks={9} />
+            </div>
 
             {/* channel card */}
             <div
-              className="mt-[8%] w-full rounded-[3px] px-1 py-[3px] text-center"
-              style={{ background: '#2a241e', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.8)' }}
+              className="mt-[10%] mb-auto w-full rounded-[3px] px-1 py-[5px] text-center sm:mb-0"
+              style={{
+                background: 'var(--color-set-wood-deep)',
+                boxShadow: `inset 0 1px 3px ${tone('void', 80)}, 0 1px 0 ${tone('paper', 45)}`,
+              }}
             >
               <span
-                className="block font-mono text-[0.42rem] leading-none tracking-[0.14em] transition-all duration-300"
+                className="readout block leading-none whitespace-nowrap text-amber transition-opacity duration-(--dur-long) ease-in-out"
                 style={{
-                  color: powered ? '#ffb000' : '#4a4034',
-                  textShadow: powered ? '0 0 6px rgba(255,176,0,0.85)' : 'none',
+                  opacity: powered ? 1 : 0,
+                  textShadow: `0 0 6px ${tone('amber', 60)}`,
                 }}
               >
-                {powered ? channel : '—'}
+                {powered ? channel : ' '}
               </span>
             </div>
 
             {/* speaker grille */}
-            <div className="mt-[10%] flex w-full flex-1 flex-col justify-end gap-[2px] pb-[4%]">
+            <div
+              aria-hidden="true"
+              className="mt-[10%] flex w-full flex-1 flex-col justify-end gap-[2px] pb-[4%] max-sm:hidden"
+            >
               {Array.from({ length: 9 }, (_, i) => (
                 <span
                   key={i}
                   className="block h-[2px] w-full rounded-full"
-                  style={{ background: 'rgba(50,42,34,0.42)', boxShadow: '0 1px 0 rgba(255,255,255,0.4)' }}
+                  style={{
+                    background: tone('set-wood', 42),
+                    boxShadow: `0 1px 0 ${tone('paper', 40)}`,
+                  }}
                 />
               ))}
             </div>
 
-            {/* power */}
+            {/* power: a lit push button. The hit area is the full 44px even
+                where the cap itself is drawn smaller. */}
             <button
               type="button"
               onClick={onPower}
               aria-pressed={powered}
-              className="group mb-[4%] flex cursor-pointer flex-col items-center gap-[3px] rounded-full p-[3px] transition-transform active:scale-90"
+              className="group flex min-h-11 min-w-11 cursor-pointer flex-col items-center justify-center gap-1 rounded-[6px]"
             >
               <span className="sr-only">{powered ? 'Switch the television off' : 'Switch the television on'}</span>
               <span
                 aria-hidden="true"
-                className="block h-[7px] w-[7px] rounded-full transition-all duration-300"
+                className="relative block h-4 w-4 rounded-full transition-transform duration-(--dur-micro) ease-out group-active:translate-y-px"
                 style={{
-                  background: powered ? 'var(--color-signal)' : '#5c5346',
-                  boxShadow: powered
-                    ? '0 0 9px 2px rgba(255,47,54,0.8), inset 0 -1px 2px rgba(0,0,0,0.4)'
-                    : 'inset 0 1px 2px rgba(0,0,0,0.55)',
+                  background: `radial-gradient(circle at 38% 32%, ${tone('set-wood', 70, 'set-panel')}, var(--color-set-wood-deep) 70%)`,
+                  boxShadow: `0 1px 0 ${tone('paper', 55)}, 0 1px 2px ${tone('void', 50)}, inset 0 -1px 1px ${tone('void', 60)}`,
                 }}
-              />
-              <span className="font-mono text-[0.36rem] tracking-[0.16em] text-[#463d31] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-                PWR
+              >
+                {/* the lamp, unlit and lit, crossfaded rather than switched */}
+                <span
+                  className="absolute inset-[30%] rounded-full"
+                  style={{ background: tone('set-wood', 70, 'set-panel') }}
+                />
+                <span
+                  className="absolute inset-[30%] rounded-full transition-opacity duration-(--dur-long) ease-in-out"
+                  style={{
+                    opacity: powered ? 1 : 0,
+                    background: 'var(--color-signal)',
+                    boxShadow: `0 0 6px 1px ${tone('signal', 70)}`,
+                  }}
+                />
+              </span>
+              <span className="readout leading-none text-set-wood/80 transition-colors duration-(--dur-short) ease-out group-hover:text-set-wood group-focus-visible:text-set-wood"
+              >
+                pwr
               </span>
             </button>
           </div>
         </div>
 
         {/* ---- maker's plate ------------------------------------------- */}
-        <div className="mt-[2%] flex items-center justify-between px-[1.5%]">
-          <span className="font-mono text-[0.55rem] tracking-[0.2em] text-[#a49a8b]/70 uppercase">
+        <div className="mt-[2.2%] flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-[1.5%]">
+          <span
+            className="font-display text-[1rem] leading-none font-extrabold tracking-[0.03em] uppercase"
+            style={{
+              ['--wdth' as string]: 125,
+              fontVariationSettings: "'wdth' var(--wdth)",
+              color: tone('set-panel', 88, 'set-wood'),
+            }}
+          >
             {brand}
           </span>
-          <span className="font-mono text-[0.5rem] tracking-[0.16em] text-[#a49a8b]/45 uppercase">
+          <span className="readout leading-none" style={{ color: tone('set-panel', 68, 'set-wood') }}>
             {model}
           </span>
         </div>
@@ -220,11 +308,15 @@ export function RetroTV({
       <div aria-hidden="true" className="mx-auto flex w-[70%] justify-between">
         <span
           className="h-3.5 w-8 skew-x-[14deg] rounded-b-[4px]"
-          style={{ background: 'linear-gradient(#1d1813,#0d0a08)' }}
+          style={{
+            background: `linear-gradient(var(--color-set-wood-deep), ${tone('set-wood-deep', 50, 'void')})`,
+          }}
         />
         <span
           className="h-3.5 w-8 -skew-x-[14deg] rounded-b-[4px]"
-          style={{ background: 'linear-gradient(#1d1813,#0d0a08)' }}
+          style={{
+            background: `linear-gradient(var(--color-set-wood-deep), ${tone('set-wood-deep', 50, 'void')})`,
+          }}
         />
       </div>
     </div>
@@ -262,7 +354,7 @@ function Dial({
     <>
       <span className="relative block w-full">
         {/* printed tick ring */}
-        <svg viewBox="0 0 100 100" className="w-full">
+        <svg aria-hidden="true" viewBox="0 0 100 100" className="w-full">
           {Array.from({ length: ticks }, (_, i) => {
             const tick = -210 + (i * 240) / (ticks - 1)
             return (
@@ -272,30 +364,36 @@ function Dial({
                 y1="7"
                 x2="50"
                 y2={i % 3 === 0 ? 14 : 11}
-                stroke="#463d31"
                 strokeWidth={i % 3 === 0 ? 2.4 : 1.4}
+                strokeLinecap="round"
                 transform={`rotate(${tick + 180} 50 50)`}
-                opacity="0.7"
+                style={{ stroke: tone('set-wood', 72) }}
               />
             )
           })}
         </svg>
 
-        {/* the knob, which turns */}
+        {/* the knob, which turns: a long settle, like a detent finding home */}
         <svg
+          aria-hidden="true"
           viewBox="0 0 100 100"
-          className="absolute inset-0 w-full transition-transform duration-300 ease-[cubic-bezier(0.34,1.4,0.64,1)]"
-          style={{ transform: `rotate(${angle}deg)` }}
+          className="absolute inset-0 w-full"
+          style={{
+            transform: `rotate(${angle}deg)`,
+            transition: 'transform var(--dur-long) var(--ease-out)',
+          }}
         >
           <defs>
             <radialGradient id={`knob-${label}`} cx="0.36" cy="0.3" r="0.85">
-              <stop offset="0%" stopColor="#5c5346" />
-              <stop offset="45%" stopColor="#2f2820" />
-              <stop offset="100%" stopColor="#141009" />
+              <stop offset="0%" style={{ stopColor: tone('set-wood', 72, 'set-panel') }} />
+              <stop offset="45%" style={{ stopColor: 'var(--color-set-wood)' }} />
+              <stop offset="100%" style={{ stopColor: tone('set-wood-deep', 70, 'void') }} />
             </radialGradient>
           </defs>
 
-          <circle cx="50" cy="50" r="33" fill="#100d09" />
+          {/* contact shadow on the panel, offset away from the light */}
+          <circle cx="51.5" cy="52.5" r="34" style={{ fill: tone('void', 22) }} />
+          <circle cx="50" cy="50" r="33" style={{ fill: tone('set-wood-deep', 60, 'void') }} />
           {Array.from({ length: 28 }, (_, i) => (
             <rect
               key={i}
@@ -303,12 +401,12 @@ function Dial({
               y="17"
               width="2"
               height="7"
-              fill="#3d3529"
               transform={`rotate(${(i * 360) / 28} 50 50)`}
+              style={{ fill: tone('set-wood', 86, 'set-panel') }}
             />
           ))}
 
-          <circle cx="50" cy="50" r="27" fill={`url(#knob-${label})`} />
+          <circle cx="50" cy="50" r="27" style={{ fill: `url(#knob-${label})` }} />
           {/* pointer */}
           <rect
             x="48.4"
@@ -316,14 +414,14 @@ function Dial({
             width="3.2"
             height="16"
             rx="1.6"
-            fill="#d8cfba"
             transform="rotate(-32 50 50)"
+            style={{ fill: 'var(--color-set-panel)' }}
           />
-          <circle cx="42" cy="40" r="4" fill="rgba(255,255,255,0.14)" />
+          <circle cx="42" cy="40" r="4" style={{ fill: tone('on-void', 12) }} />
         </svg>
       </span>
 
-      <span className="mt-[2%] block text-center font-mono text-[0.42rem] tracking-[0.18em] text-[#463d31]">
+      <span className="readout mt-[3%] block text-center leading-none text-set-wood">
         {label}
       </span>
     </>
@@ -353,7 +451,7 @@ function Dial({
           onStep(1)
         }
       }}
-      className={`relative w-full cursor-pointer rounded-full transition-transform active:scale-95 ${spacing}`}
+      className={`relative min-h-11 w-full cursor-pointer rounded-full transition-transform duration-(--dur-micro) ease-out active:scale-[0.97] ${spacing}`}
     >
       <span className="sr-only">{title}</span>
       {body}

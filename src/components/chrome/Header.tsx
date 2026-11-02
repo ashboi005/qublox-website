@@ -7,8 +7,10 @@ import { ScrambleText } from '@/components/ui/ScrambleText'
 
 /**
  * The header is the set's front panel: wordmark, channel readout, and the
- * only navigation on the page. It sits in difference blend mode so it stays
- * legible as the ground goes bone → void → yellow without ever re-colouring.
+ * only navigation on the page. It takes its ink from `--page-fg`, which the
+ * background controller interpolates alongside the ground, so it re-inks
+ * with the room instead of relying on a blend mode that no contrast check
+ * (and no screen reader user zooming in) can trust.
  */
 
 /**
@@ -29,6 +31,16 @@ export function Header({ channels = [] }: { channels?: Channel[] }) {
   // all — the tuner is a readout of this page's sections, so it should show
   // nothing rather than a channel that is not there.
   const [current, setCurrent] = useState<string | null>(null)
+  // The scrim only exists once the page has moved: at rest the header sits on
+  // the opening frame (the TV, the ERISED splash) with nothing behind it.
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   /**
    * The readout follows whichever section's top edge has passed the top of the
@@ -80,13 +92,27 @@ export function Header({ channels = [] }: { channels?: Channel[] }) {
   const signal = index >= 0 ? 1 + Math.min(4, index) : 0
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-[100] mix-blend-difference">
-      <div className="edge-x flex items-start justify-between py-5 text-bone">
+    <header
+      className="pointer-events-none fixed inset-x-0 top-0 z-[100]"
+      style={{ color: 'var(--header-fg, var(--page-fg))' }}
+    >
+      {/* A scrim in the ground's own colour, so copy scrolling up under the
+          header fades out instead of colliding with the wordmark. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-28 transition-opacity duration-[var(--dur-long)] ease-out"
+        style={{
+          opacity: scrolled ? 1 : 0,
+          background:
+            'linear-gradient(to bottom, var(--page-bg) 0%, color-mix(in oklab, var(--page-bg) 82%, transparent) 45%, transparent 100%)',
+        }}
+      />
+      <div className="edge-x relative flex items-center justify-between py-5">
         {/* Wordmark */}
         <a
           href={onHome ? '#hero' : '/'}
           className="pointer-events-auto group flex items-baseline gap-2.5"
-          aria-label={onHome ? 'Qublox — back to top' : 'Qublox — home'}
+          aria-label={onHome ? 'Qublox, back to top' : 'Qublox, home'}
         >
           <ScrambleText
             text="QUBLOX"
@@ -94,23 +120,25 @@ export function Header({ channels = [] }: { channels?: Channel[] }) {
             dwell={340}
             stagger={55}
           />
-          <span className="label hidden opacity-55 sm:inline">®</span>
+          <span className="hidden text-xs opacity-60 sm:inline" aria-hidden="true">
+            ®
+          </span>
         </a>
 
-        {/* Channel readout — the current section, dressed as a tuner */}
+        {/* Channel readout: the current section, dressed as a tuner */}
         <div
-          className="label hidden items-center gap-3 opacity-70 md:flex"
+          className="readout hidden items-center gap-3 opacity-75 transition-opacity duration-[var(--dur-short)] md:flex"
           style={{ visibility: channel ? 'visible' : 'hidden' }}
           aria-hidden="true"
         >
           <span>{channel?.label}</span>
           <span className="h-px w-6 bg-current opacity-40" />
-          <span className="w-[7ch]">{channel?.name}</span>
+          <span className="w-[8ch] font-body text-sm">{channel?.name}</span>
           <span className="flex items-end gap-[2px]" title="Signal">
             {[1, 2, 3, 4, 5].map((bar) => (
               <span
                 key={bar}
-                className="w-[3px] bg-current transition-opacity duration-300"
+                className="w-[3px] bg-current transition-opacity duration-[var(--dur-long)] ease-out"
                 style={{ height: 3 + bar * 2, opacity: bar <= signal ? 1 : 0.22 }}
               />
             ))}
@@ -118,15 +146,18 @@ export function Header({ channels = [] }: { channels?: Channel[] }) {
         </div>
 
         {/* Navigation */}
-        <nav className="pointer-events-auto flex items-center gap-4 sm:gap-6" aria-label="Sections">
+        <nav className="pointer-events-auto flex items-center gap-2 sm:gap-4" aria-label="Sections">
           {NAV.map((item) => (
             <a
               key={item.href}
               href={item.home && !onHome ? `/${item.href}` : item.href}
-              className="label relative py-1 opacity-70 transition-opacity duration-200 hover:opacity-100 focus-visible:opacity-100"
+              className="relative inline-flex min-h-11 items-center px-2 text-md font-semibold opacity-80 transition-opacity duration-[var(--dur-short)] ease-out hover:opacity-100 focus-visible:opacity-100"
             >
               {item.label}
-              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-current transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100 [a:hover>&]:scale-x-100" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-2 bottom-2 h-px origin-left scale-x-0 bg-current transition-transform duration-[var(--dur-long)] ease-out [a:hover>&]:scale-x-100"
+              />
             </a>
           ))}
         </nav>

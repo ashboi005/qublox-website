@@ -39,7 +39,7 @@ const FEATURES = [
   {
     code: 'PROBE',
     title: 'Thinks like a real intruder',
-    body: 'An autonomous agent maps your site and chases whatever it finds — the way an attacker would, not the way a checklist would.',
+    body: 'An autonomous agent maps your site and chases whatever it finds, the way an attacker would, not the way a checklist would.',
   },
   {
     code: 'PROOF',
@@ -69,9 +69,10 @@ export function Featured() {
   // opaque mark at rest, or its PNG edge reads as a faint box on the ground.
   const bloom = useScrollRange(scrollYProgress, [0.12, 0.22, 0.34], [0, 0.85, 0])
   const clawFade = useScrollRange(scrollYProgress, [0.18, 0.34], [1, 0.1])
-  const eyebrowOpacity = useScrollRange(scrollYProgress, [0.24, 0.32], [0, 1])
   const taglineOpacity = useScrollRange(scrollYProgress, [0.32, 0.46], [0, 1])
-  const taglineY = useScrollRange(scrollYProgress, [0.32, 0.46], [18, 0])
+  const taglineY = useScrollRange(scrollYProgress, [0.32, 0.46], [12, 0])
+  // The ident sits under the tagline as a caption, after the line it captions.
+  const identOpacity = useScrollRange(scrollYProgress, [0.4, 0.5], [0, 1])
   const cueOpacity = useScrollRange(scrollYProgress, [0.46, 0.52, 0.62], [0, 1, 0])
 
   return (
@@ -79,11 +80,11 @@ export function Featured() {
       id="featured"
       data-ground="void"
       data-channel="lokey"
-      className="relative bg-black"
+      className="relative bg-void"
       aria-labelledby="featured-heading"
     >
-      <div ref={trackRef} className="relative h-[200vh]">
-      <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden bg-black">
+      <div ref={trackRef} className="relative h-[200svh]">
+      <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden bg-void">
         {/* red bloom behind the mark, as the gashes open */}
         <motion.div
           className="pointer-events-none absolute inset-0 z-0"
@@ -117,104 +118,134 @@ export function Featured() {
           ))}
         </motion.svg>
 
-        {/* the wordmark, bleeding up through the gashes */}
-        <div className="relative z-20 flex w-full max-w-[64rem] flex-col items-center px-6 text-center">
-          <motion.span
-            className="label text-signal"
-            style={{ opacity: reduced ? 1 : eyebrowOpacity }}
-          >
-            Featured broadcast · Product 001
-          </motion.span>
-
+        {/*
+          The wordmark, bleeding up through the gashes. The column is not its
+          own stacking context, so the mark can blend with the bloom: its
+          near-black plate lightens away and only the horns and letters read,
+          never the rectangle of the PNG.
+        */}
+        <div className="relative flex w-full max-w-[64rem] flex-col items-center px-6 text-center">
           <motion.img
             // eslint-disable-next-line @next/next/no-img-element
             src="/brand/lokey-mark.png"
             alt="Lokey"
-            className="mt-6 w-[min(72vw,42rem)] select-none"
+            className="relative z-20 w-[min(72vw,42rem)] select-none mix-blend-lighten"
             style={{
               opacity: reduced ? 1 : markOpacity,
               scale: reduced ? 1 : markScale,
-              filter: 'drop-shadow(0 0 48px rgba(255,47,54,0.35))',
             }}
             draggable={false}
           />
 
           <motion.p
             id="featured-heading"
-            className="mt-7 max-w-2xl text-balance font-display text-[clamp(1.3rem,3.2vw,2.3rem)] font-semibold leading-[1.04] tracking-[-0.025em] text-bone"
+            className="relative z-20 mt-8 max-w-2xl text-balance font-display text-[clamp(1.375rem,3.2vw,2.375rem)] font-semibold leading-[1.08] tracking-[-0.025em] text-on-void"
             style={{ opacity: reduced ? 1 : taglineOpacity, y: reduced ? 0 : taglineY }}
           >
             Someone will try to break into your site.{' '}
             <span className="text-signal">Better it&apos;s us.</span>
           </motion.p>
+
+          {/* the ident: two facts held apart by a hairline, the nav's own grammar */}
+          <motion.p
+            className="label relative z-20 mt-6 flex items-center gap-3 text-on-void-muted"
+            style={{ opacity: reduced ? 1 : identOpacity }}
+          >
+            <span>Featured broadcast</span>
+            <span aria-hidden="true" className="h-px w-8 bg-on-void-muted/50" />
+            <span className="text-signal">Product 001</span>
+          </motion.p>
         </div>
 
         {/* scroll cue, visible only in the handoff between the reveal and the pitch */}
         <motion.span
-          className="label absolute bottom-7 left-1/2 z-20 -translate-x-1/2 text-bone/60"
+          className="label absolute bottom-7 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 text-on-void-muted"
           style={{ opacity: reduced ? 0 : cueOpacity }}
           aria-hidden="true"
         >
-          ↓ Keep scrolling
+          Keep scrolling
+          <span className="h-6 w-px bg-on-void-muted/50" />
         </motion.span>
       </div>
       </div>
 
       {/* the pitch — flowed, in the site's own reading grammar */}
-      <div className="edge-x relative z-20 bg-black pb-[16vh] text-bone">
+      <div className="edge-x relative z-20 bg-void pb-[16svh] text-on-void">
         <div className="mx-auto max-w-[76rem]">
-          <div className="max-w-3xl">
-            <p className="label text-signal">What it is</p>
-            <StretchHeading
-              as="h3"
-              className="mt-4 text-[clamp(2.2rem,6vw,5rem)] text-bone"
-              from={72}
-              to={116}
-            >
-              An AI that attacks<br />your site first.
-            </StretchHeading>
-            <p className="mt-6 max-w-xl text-pretty text-[clamp(1rem,1.3vw,1.15rem)] leading-relaxed text-bone/70">
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="min-w-0 lg:col-span-7">
+              <StretchHeading
+                as="h3"
+                className="text-[clamp(2.25rem,6vw,5rem)] text-on-void"
+                from={72}
+                to={116}
+              >
+                An AI that attacks<br />your site first.
+              </StretchHeading>
+            </div>
+            <p className="max-w-xl text-pretty text-lead leading-[1.55] text-on-void-muted lg:col-span-5 lg:pb-2">
               Lokey points an autonomous security agent at your website. It probes it the way a
               real intruder would, proves what it can actually reach, and hands you a ranked list
-              of what to fix — in plain English.
+              of what to fix, in plain English.
             </p>
           </div>
 
-          <div className="mt-16 grid gap-px overflow-hidden rounded-xl border border-bone/15 bg-bone/15 sm:grid-cols-3">
+          {/* the three moves: a ruled spec sheet, read across, not three tiles */}
+          <ol className="mt-20 border-b border-on-void/15">
             {FEATURES.map((feature) => (
-              <motion.article
+              <motion.li
                 key={feature.code}
-                className="flex flex-col gap-3 bg-black p-7"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="relative grid gap-x-8 gap-y-3 py-8 md:grid-cols-12 md:items-baseline md:py-10"
+                initial={reduced ? false : { y: 12 }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: true, amount: 0.6 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
               >
-                <span className="label text-signal">{feature.code}</span>
-                <h4 className="text-balance font-display text-[clamp(1.2rem,1.9vw,1.5rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-bone">
+                {/* the hairline draws itself across as the row arrives */}
+                <motion.span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-px origin-left bg-on-void/15"
+                  initial={reduced ? false : { scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  viewport={{ once: true, amount: 0.6 }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                />
+                <span
+                  className="display text-[clamp(1.75rem,3vw,2.5rem)] text-signal md:col-span-3"
+                  style={{ ['--wdth' as string]: 112 }}
+                >
+                  {feature.code}
+                </span>
+                <h4 className="text-balance font-display text-title font-semibold leading-[1.15] tracking-[-0.015em] text-on-void md:col-span-4">
                   {feature.title}
                 </h4>
-                <p className="text-pretty text-[14.5px] leading-relaxed text-bone/65">{feature.body}</p>
-              </motion.article>
+                <p className="max-w-[46ch] text-pretty text-md leading-[1.6] text-on-void-muted md:col-span-5">
+                  {feature.body}
+                </p>
+              </motion.li>
             ))}
-          </div>
+          </ol>
 
           {/* CTA — the flagship, and where to find it */}
-          <div className="mt-16 flex flex-col items-start justify-between gap-8 rounded-xl border border-signal/30 bg-signal/[0.06] p-8 sm:flex-row sm:items-center sm:p-10">
+          <div className="mt-20 flex flex-col items-start justify-between gap-8 sm:flex-row sm:items-end">
             <div>
-              <p className="label text-signal">Qublox flagship product</p>
-              <p className="mt-3 max-w-md text-balance font-display text-[clamp(1.35rem,2.4vw,2rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-bone">
+              <p className="max-w-md text-balance font-display text-[clamp(1.5rem,2.6vw,2.25rem)] font-semibold leading-[1.08] tracking-[-0.02em] text-on-void">
                 See it probe a live site.
+              </p>
+              <p className="label mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-on-void-muted">
+                <span>Qublox flagship product</span>
+                <span aria-hidden="true" className="h-px w-8 bg-on-void-muted/50" />
+                <span className="font-mono text-on-void">lokey.qubloxhq.com</span>
               </p>
             </div>
             <a
               href={LOKEY_URL}
               target="_blank"
               rel="noreferrer noopener"
-              className="group inline-flex shrink-0 items-center gap-3 rounded-full bg-signal px-7 py-4 text-bone transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-[1.03] focus-visible:scale-[1.03]"
+              className="inline-flex min-h-12 shrink-0 items-center rounded-card bg-accent-deep px-7 text-md font-semibold text-on-accent-deep transition-transform duration-[var(--dur-short)] ease-out hover:-translate-y-0.5"
             >
-              <span className="label !text-[0.8rem] !tracking-[0.1em] text-bone">lokey.qubloxhq.com</span>
-              <span className="transition-transform duration-300 group-hover:translate-x-1">↗</span>
+              Open Lokey
+              <span className="sr-only"> (opens lokey.qubloxhq.com in a new tab)</span>
             </a>
           </div>
         </div>

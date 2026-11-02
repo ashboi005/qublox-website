@@ -10,7 +10,7 @@ import {
   useVelocity,
   type MotionValue,
 } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useReducedMotion } from '@/lib/useReducedMotion'
 
 /**
@@ -40,12 +40,24 @@ import { useReducedMotion } from '@/lib/useReducedMotion'
  * innermost content differs.
  */
 
-const CHANNELS = [
-  { id: 'red', color: '#ff3b30', base: -5, factor: -1 },
-  { id: 'blue', color: '#2f6bff', base: 5, factor: 1 },
-  { id: 'yellow', color: '#ffd23f', base: -2.4, factor: -0.45 },
-  { id: 'green', color: '#3bffa8', base: 2.6, factor: 0.55 },
+/**
+ * `color` is the channel's token, for type and glow. `unit` is the same hue as
+ * plain RGB multipliers in 0–1, because an feColorMatrix needs numbers rather
+ * than a colour to tint the artwork with.
+ */
+type Channel = { id: string; color: string; unit: [number, number, number] }
+
+const CHANNELS: (Channel & { base: number; factor: number })[] = [
+  { id: 'red', color: 'var(--color-chan-red)', unit: [1, 0.231, 0.188], base: -5, factor: -1 },
+  { id: 'blue', color: 'var(--color-chan-blue)', unit: [0.184, 0.42, 1], base: 5, factor: 1 },
+  { id: 'yellow', color: 'var(--color-chan-yellow)', unit: [1, 0.824, 0.247], base: -2.4, factor: -0.45 },
+  { id: 'green', color: 'var(--color-chan-green)', unit: [0.231, 1, 0.659], base: 2.6, factor: 0.55 },
 ]
+
+const WHITE: Channel = { id: 'white', color: 'var(--color-dos-white)', unit: [1, 1, 1] }
+
+/** How far, in px, a channel change throws the picture at its peak. */
+const GLITCH_TEAR = 30
 
 // Bands of unequal height read as a rolling horizontal-hold fault; equal ones
 // just read as a gradient.
@@ -144,7 +156,10 @@ function OnAir({
            */
           fontSize: `${fitCqw(word).toFixed(2)}cqw`,
           ['--wdth' as string]: 112,
-          textShadow: tintId === 'white' ? '0 0 14px rgba(255,255,255,0.5)' : `0 0 10px ${color}`,
+          textShadow:
+            tintId === 'white'
+              ? '0 0 14px color-mix(in oklab, var(--color-dos-white) 45%, transparent)'
+              : `0 0 10px color-mix(in oklab, ${color} 80%, transparent)`,
         }}
       >
         {word}
@@ -176,46 +191,81 @@ export function TvScreen({
   const idle = useMotionValue(0)
   const tear = useTransform(
     [split, idle, glitch],
-    ([s, i, g]: number[]) => (s ?? 0) + (i ?? 0) + (g ?? 0) * 42,
+    ([s, i, g]: number[]) => (s ?? 0) + (i ?? 0) + (g ?? 0) * GLITCH_TEAR,
   )
+  // A channel change also dips the picture, the way a tube loses a little
+  // brightness while it re-locks, so the cut reads as a retune, not a pop.
+  const picture = useTransform(glitch, [0, 1], [1, 0.72])
 
+  // The idle drift only runs while the set is on screen.
+  const root = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (reduced) return
+    const node = root.current
     let frame = 0
+    let running = false
     const tick = (now: number) => {
       idle.set(Math.sin(now / 620) * 1.1 + Math.sin(now / 197) * 0.45)
       frame = requestAnimationFrame(tick)
     }
-    frame = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(frame)
+    const start = () => {
+      if (running) return
+      running = true
+      frame = requestAnimationFrame(tick)
+    }
+    const stop = () => {
+      running = false
+      cancelAnimationFrame(frame)
+    }
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      start()
+      return stop
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) start()
+      else stop()
+    })
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      stop()
+    }
   }, [idle, reduced])
 
   return (
-    <div className="relative h-full w-full" style={{ containerType: 'inline-size' }}>
+    <div ref={root} className="relative h-full w-full" style={{ containerType: 'inline-size' }}>
       <ChannelFilters />
 
       {/*
         Switching off is a tube losing its supply, not a light going out: the
-        picture collapses to a horizontal line and the line fades. Scaling Y to
-        near-zero and briefly overshooting X is the whole trick.
+        picture folds to a horizontal line, the line draws in to a dot, and the
+        dot fades. Switching on runs it the other way: the line opens out,
+        then the picture opens from it. Each stage is eased, and every
+        sequence starts from wherever the last one left off (`null`), so
+        toggling mid-way never snaps.
       */}
       <motion.div
         className="absolute inset-0"
         initial={false}
         animate={
-          powered
-            ? { scaleY: 1, scaleX: 1, opacity: 1 }
-            : { scaleY: 0.004, scaleX: 1.06, opacity: 0 }
+          reduced
+            ? { scaleY: 1, scaleX: 1, opacity: powered ? 1 : 0 }
+            : powered
+              ? { scaleY: [null, 0.006, 1], scaleX: [null, 1, 1], opacity: [null, 1, 1] }
+              : { scaleY: [null, 0.006, 0.006], scaleX: [null, 1, 0.02], opacity: [null, 1, 0] }
         }
         transition={
-          powered
-            ? { duration: 0.34, ease: [0.16, 1, 0.3, 1] }
-            : { scaleY: { duration: 0.16, ease: [0.7, 0, 0.84, 0] }, scaleX: { duration: 0.12 }, opacity: { duration: 0.34, delay: 0.1 } }
+          reduced
+            ? { duration: 0.2, ease: [0.65, 0, 0.35, 1] }
+            : powered
+              ? { duration: 0.62, times: [0, 0.32, 1], ease: [[0.16, 1, 0.3, 1], [0.16, 1, 0.3, 1]] }
+              : { duration: 0.56, times: [0, 0.5, 1], ease: [[0.65, 0, 0.35, 1], [0.7, 0, 0.84, 0]] }
         }
       >
+      <motion.div className="absolute inset-0" style={{ opacity: picture }}>
 
       {reduced ? (
-        <OnAir word={word} tintId="white" color="#ffffff" />
+        <OnAir word={word} tintId="white" color={WHITE.color} />
       ) : (
         <>
           {/* Colour channels. Screen blend is additive, so where all four
@@ -232,11 +282,12 @@ export function TvScreen({
           {/* The crisp master on top. The channels supply the fringe and the
               bloom; this is what keeps the picture legible. */}
           <div className="absolute inset-0 opacity-95">
-            <OnAir word={word} tintId="white" color="#ffffff" />
+            <OnAir word={word} tintId="white" color={WHITE.color} />
           </div>
         </>
       )}
 
+      </motion.div>
       </motion.div>
 
       {/* Bloom, which dies with the picture. */}
@@ -245,10 +296,10 @@ export function TvScreen({
         className="pointer-events-none absolute inset-0 -z-10 blur-3xl"
         initial={false}
         animate={{ opacity: powered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.42, ease: [0.65, 0, 0.35, 1] }}
         style={{
           background:
-            'radial-gradient(closest-side, rgba(59,255,168,0.22), rgba(47,107,255,0.1) 55%, transparent 74%)',
+            'radial-gradient(closest-side, color-mix(in oklab, var(--color-phosphor) 20%, transparent), color-mix(in oklab, var(--color-chan-blue) 10%, transparent) 55%, transparent 74%)',
         }}
       />
     </div>
@@ -272,7 +323,7 @@ function ChannelLayer({
 }) {
   const x = useTransform(tear, (v) => base + v * factor)
   return (
-    <motion.div className="absolute inset-0 opacity-90 mix-blend-screen" style={{ x }}>
+    <motion.div className="absolute inset-0 opacity-90 mix-blend-screen will-change-transform" style={{ x }}>
       <OnAir word={word} tintId={id} color={color} />
     </motion.div>
   )
@@ -297,7 +348,7 @@ function SliceLayer({
       className="absolute inset-0 opacity-55 mix-blend-screen"
       style={{ clipPath: `inset(${top}% 0 ${bottom}% 0)`, x }}
     >
-      <OnAir word={word} tintId="white" color="#ffffff" />
+      <OnAir word={word} tintId="white" color={WHITE.color} />
     </motion.div>
   )
 }
@@ -315,8 +366,8 @@ function ChannelFilters() {
   return (
     <svg aria-hidden="true" className="absolute h-0 w-0" focusable="false">
       <defs>
-        {[...CHANNELS, { id: 'white', color: '#ffffff' }].map((channel) => {
-          const [r, g, b] = hexToUnit(channel.color)
+        {[...CHANNELS, WHITE].map((channel) => {
+          const [r, g, b] = channel.unit
           return (
             <filter key={channel.id} id={`crt-${channel.id}`} colorInterpolationFilters="sRGB">
               <feComponentTransfer>
@@ -341,9 +392,4 @@ function ChannelFilters() {
       </defs>
     </svg>
   )
-}
-
-function hexToUnit(hex: string): [number, number, number] {
-  const value = hex.replace('#', '')
-  return [0, 2, 4].map((i) => parseInt(value.slice(i, i + 2), 16) / 255) as [number, number, number]
 }

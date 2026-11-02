@@ -33,14 +33,14 @@ export function ErisedIntro({ progress, lead }: { progress: MotionValue<number>;
   const leadOpacity = useScrollRange(progress, [0.78, 0.86], [0, 1])
 
   return (
-    <div className="relative h-[100svh] overflow-hidden bg-black">
+    <div className="relative h-[100svh] overflow-hidden bg-erised-ink">
       {reduced ? <div className="absolute inset-0 bg-erised-yellow" /> : <Splash progress={progress} />}
 
       <div className="absolute inset-0 grid place-items-center px-6">
         <div className="flex flex-col items-center text-center">
           <ErisedMark progress={markProgress} />
           <motion.p
-            className="mx-auto mt-12 max-w-[44ch] font-round text-[1.1rem] leading-relaxed text-erised-ink/85 sm:text-[1.25rem]"
+            className="mx-auto mt-12 max-w-[44ch] font-round text-[1.125rem] leading-[1.55] text-erised-ink sm:text-[1.25rem]"
             style={reduced ? undefined : { opacity: leadOpacity }}
           >
             {lead}

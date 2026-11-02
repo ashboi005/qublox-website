@@ -5,9 +5,12 @@ import { RevealWords } from '@/components/ui/RevealWords'
 import type { Service, SiteSettings } from '@/types/content'
 
 /**
- * About — CH 02, STUDIO. The lower third: the caption the broadcast puts on
+ * About, CH 02, STUDIO. The lower third: the caption the broadcast puts on
  * screen to tell you what you are looking at. Type-only by design; it is the
  * one quiet room between the CRT and the blackout.
+ *
+ * The statement is the section's heading. It used to sit under a tracked
+ * caps row naming the channel, which the header's tuner already reads out.
  */
 export function About({ settings, services }: { settings: SiteSettings; services: Service[] }) {
   const about = settings.about
@@ -21,26 +24,20 @@ export function About({ settings, services }: { settings: SiteSettings; services
       aria-labelledby="about-heading"
     >
       <div className="mx-auto max-w-[76rem]">
-        <div className="rule-t flex items-baseline justify-between pt-4 text-ink/45">
-          <span className="label">{about.eyebrow}</span>
-          <span className="label">{about.kicker}</span>
-        </div>
-
-        <div className="mt-[8vh] grid gap-x-16 gap-y-12 md:grid-cols-12">
+        <div className="rule-t grid gap-x-16 gap-y-12 pt-10 md:grid-cols-12">
           <div className="md:col-span-8">
-            <h2 id="about-heading" className="sr-only">
-              About Qublox
-            </h2>
             <RevealWords
+              as="h2"
+              id="about-heading"
               text={about.lead}
               highlights={about.highlights}
-              className="max-w-[18ch] text-[clamp(2rem,5.2vw,4.25rem)] leading-[1.16] font-medium tracking-[-0.025em] text-ink"
+              className="max-w-[18ch] font-display text-[clamp(2.25rem,5.2vw,4.5rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-ink"
             />
           </div>
 
-          <div className="space-y-6 self-end md:col-span-4">
+          <div className="space-y-5 self-end md:col-span-4">
             {about.body.map((paragraph: string, index: number) => (
-              <p key={index} className="text-[0.975rem] leading-[1.75] text-ink/70">
+              <p key={index} className="text-md leading-[1.65] text-ink-2">
                 {paragraph}
               </p>
             ))}
@@ -48,8 +45,8 @@ export function About({ settings, services }: { settings: SiteSettings; services
         </div>
 
         {/* Services as a spec table. The list is a real inventory, so it is
-            set as one — not as cards. */}
-        <div className="mt-[12vh]">
+            set as one, not as cards. */}
+        <div className="mt-[14vh]">
           <StretchHeading
             className="text-[clamp(2.5rem,8vw,6.5rem)] text-ink"
             from={62}
@@ -58,24 +55,24 @@ export function About({ settings, services }: { settings: SiteSettings; services
             {about.servicesTitle}
           </StretchHeading>
 
-          <dl className="mt-10">
+          <dl className="mt-12 border-b border-rule">
             {services.map((service, index) => (
               <div
                 key={service._id}
-                className="rule-t group grid grid-cols-12 items-start gap-4 py-6 text-ink transition-colors duration-300 last:border-b last:border-current/20"
+                className="grid grid-cols-12 items-baseline gap-x-6 gap-y-3 border-t border-rule py-7 text-ink"
               >
-                <dt className="col-span-12 flex items-baseline gap-4 md:col-span-4">
-                  <span className="label text-ink/40">{String(index + 1).padStart(2, '0')}</span>
-                  <span className="text-[1.35rem] leading-tight font-medium tracking-[-0.02em]">
+                <dt className="col-span-12 flex items-baseline gap-5 md:col-span-4">
+                  <span className="readout text-muted">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="text-title leading-tight font-semibold tracking-[-0.02em]">
                     {service.title}
                   </span>
                 </dt>
-                <dd className="col-span-12 text-[0.95rem] leading-relaxed text-ink/70 md:col-span-5">
+                <dd className="col-span-12 max-w-[52ch] text-md leading-[1.6] text-ink-2 md:col-span-5">
                   {service.description}
                 </dd>
-                <dd className="col-span-12 flex flex-wrap gap-x-3 gap-y-1.5 md:col-span-3 md:justify-end">
+                <dd className="col-span-12 flex flex-wrap gap-x-4 gap-y-1 md:col-span-3 md:justify-end">
                   {service.capabilities.map((capability) => (
-                    <span key={capability} className="label text-ink/45">
+                    <span key={capability} className="label text-muted">
                       {capability}
                     </span>
                   ))}

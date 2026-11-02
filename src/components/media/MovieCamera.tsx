@@ -13,7 +13,7 @@ export function MovieCamera({ className }: { className?: string }) {
       className={className}
       aria-hidden="true"
       fill="none"
-      stroke="#ffffff"
+      style={{ stroke: 'var(--color-on-void)' }}
       strokeWidth="2.4"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -36,6 +36,10 @@ export function MovieCamera({ className }: { className?: string }) {
       {/* the operator's window */}
       <rect x="43" y="59" width="30" height="15" rx="2" strokeWidth="1.6" opacity="0.8" />
       <path d="M48 66h9" strokeWidth="1.6" opacity="0.8" />
+      {/* a seam and two screws, so the body reads as a cast housing */}
+      <path d="M34 84h88" strokeWidth="1.2" opacity="0.4" />
+      <circle cx="113" cy="93" r="1.6" strokeWidth="1.2" opacity="0.6" />
+      <circle cx="43" cy="93" r="1.6" strokeWidth="1.2" opacity="0.6" />
 
       {/* lens barrel */}
       <rect x="118" y="60" width="30" height="32" rx="3" />
@@ -49,8 +53,8 @@ export function MovieCamera({ className }: { className?: string }) {
       <circle cx="32" cy="88" r="6" strokeWidth="1.8" />
       <path d="M18 88h8" strokeWidth="1.8" />
 
-      {/* record lamp — the one thing that is not white */}
-      <circle cx="112" cy="58" r="3" fill="#ff2f36" stroke="none" />
+      {/* record lamp: the one thing that is not white */}
+      <circle cx="112" cy="58" r="3" style={{ fill: 'var(--color-signal)' }} stroke="none" />
     </svg>
   )
 }

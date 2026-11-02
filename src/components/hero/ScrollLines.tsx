@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, type MotionValue } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { useScrollRange } from '@/lib/useScrollRange'
 
 /**
@@ -8,8 +9,9 @@ import { useScrollRange } from '@/lib/useScrollRange'
  *
  * The type is set word by word rather than row by row. Giving each row a
  * single face made the stack read as five separate bands of type that happened
- * to be stacked; mixing the faces *within* a line — a grotesque next to a
- * serif italic next to an outline next to spaced monospace — makes the whole
+ * to be stacked; mixing the faces *within* a line — Archivo across its width
+ * axis, Instrument Serif upright and italic, an outline, spaced JetBrains
+ * Mono — makes the whole
  * wall read as one specimen sheet, and means no two passes of the same word
  * ever look alike.
  *
@@ -20,7 +22,9 @@ import { useScrollRange } from '@/lib/useScrollRange'
  * Each row is a marquee holding two copies of its sequence and sliding by
  * exactly half its width, which loops seamlessly with no measuring and no
  * JavaScript — a CSS animation on a transform, so it never touches the main
- * thread once it starts.
+ * thread once it starts. The marquees pause once the hero has scrolled out of
+ * view, and stand still under reduced motion (see the keyframes in
+ * globals.css).
  */
 
 type Props = {
@@ -31,10 +35,12 @@ type Props = {
 /**
  * The faces the wall is set in.
  *
- * Three of the eight are cursive — a wall of bold grotesques reads as one
- * voice shouting, and the italics are what make it read as a specimen sheet
- * instead. They also do the most work per appearance, so they are weighted to
- * come up often.
+ * Three of the eight are the serif — a wall of bold grotesques reads as one
+ * voice shouting, and Instrument Serif (upright, italic, and italic in lower
+ * case) is what makes it read as a specimen sheet instead. It also does the
+ * most work per appearance, so it is weighted to come up often. The grotesque
+ * runs from a condensed 62 to an extended 125 on Archivo's width axis, in
+ * weights from 300 to 900.
  *
  * `trim` compensates for a face whose letter-spacing or italic angle leaves
  * air after its last glyph — a spaced monospace word opened a gap roughly a
@@ -49,23 +55,25 @@ const FACES = [
     style: { ['--wdth' as string]: 122, fontWeight: 900, letterSpacing: '-0.035em' },
   },
   {
-    className: 'italic',
+    className: '',
     style: {
-      fontFamily: 'var(--font-cursive)',
+      fontFamily: 'var(--font-serif)',
       fontWeight: 400,
-      letterSpacing: '-0.005em',
+      letterSpacing: '-0.015em',
       textTransform: 'none' as const,
     },
     titleCase: true,
-    trim: '-0.1em',
+    trim: '-0.03em',
   },
   {
     className: 'display',
-    // Outlined. On bone this reads as a printed keyline, not as a ghost.
+    // Outlined. On bone this reads as a printed keyline, not as a ghost. The
+    // fill is cleared with the text-fill colour, not `color`, so the stroke's
+    // currentColor is still the row's ink.
     style: {
       ['--wdth' as string]: 70,
       fontWeight: 800,
-      color: 'transparent',
+      WebkitTextFillColor: 'transparent',
       WebkitTextStroke: '1.1px currentColor',
       letterSpacing: '0.01em',
     },
@@ -95,24 +103,24 @@ const FACES = [
   {
     className: 'italic',
     style: {
-      fontFamily: 'var(--font-cursive)',
-      fontWeight: 700,
-      letterSpacing: '-0.015em',
-      textTransform: 'none' as const,
+      fontFamily: 'var(--font-serif)',
+      fontWeight: 400,
+      letterSpacing: '-0.02em',
+      textTransform: 'lowercase' as const,
     },
-    titleCase: true,
-    trim: '-0.1em',
+    trim: '-0.09em',
   },
   {
     className: '',
+    // Extended and light: the grotesque at the far end of its width axis.
     style: {
-      fontFamily: 'var(--font-round)',
-      fontWeight: 600,
-      letterSpacing: '-0.01em',
+      fontFamily: 'var(--font-display)',
+      fontVariationSettings: "'wdth' 125",
+      fontWeight: 300,
+      letterSpacing: '-0.02em',
       textTransform: 'none' as const,
     },
     titleCase: true,
-    trim: '-0.06em',
   },
   {
     className: 'display',
@@ -131,20 +139,34 @@ const FACES = [
  * font to fall back from.
  */
 const MARKS = [
-  { shape: 'dot' as const, color: 'var(--color-signal)', opacity: 0.5 },
-  { shape: 'cross' as const, color: 'var(--color-erised-blue)', opacity: 0.55 },
-  { shape: 'diamond' as const, color: 'var(--color-erised-yellow-deep)', opacity: 0.6 },
-  { shape: 'bar' as const, color: 'currentColor', opacity: 0.26 },
+  { shape: 'dot' as const, color: 'var(--color-signal)', strength: 0.5 },
+  { shape: 'cross' as const, color: 'var(--color-erised-blue)', strength: 0.55 },
+  { shape: 'diamond' as const, color: 'var(--color-erised-yellow-deep)', strength: 0.6 },
+  { shape: 'bar' as const, color: 'var(--page-fg)', strength: 0.26 },
 ]
 
+/**
+ * The wall's ink, two steps of the page's own ink: most rows sit back, one
+ * row comes forward. Set as a colour with alpha rather than as opacity, so no
+ * row needs its own compositing layer and the outline face's stroke picks up
+ * exactly the same ink.
+ */
+const INK = { quiet: 0.22, firm: 0.36 }
+
 // Four rows. Five packed the stack tight enough that neighbouring lines
-// collided, and the set has to sit in front of a wall, not a thicket.
+// collided, and the set has to sit in front of a wall, not a thicket. Slow:
+// the wall should drift, not scroll past.
 const ROWS = [
-  { speed: 40, reverse: false, opacity: 0.2 },
-  { speed: 27, reverse: true, opacity: 0.26 },
-  { speed: 52, reverse: false, opacity: 0.4 },
-  { speed: 34, reverse: true, opacity: 0.22 },
+  { speed: 48, reverse: false, ink: INK.quiet },
+  { speed: 34, reverse: true, ink: INK.quiet },
+  { speed: 60, reverse: false, ink: INK.firm },
+  { speed: 42, reverse: true, ink: INK.quiet },
 ]
+
+/** A colour at a share of its strength, faded toward transparent. */
+function fade(color: string, share: number): string {
+  return `color-mix(in oklab, ${color} ${(share * 100).toFixed(1)}%, transparent)`
+}
 
 /**
  * One size for every row, and a row box that clears the tallest face in it.
@@ -176,19 +198,35 @@ function toTitle(line: string): string {
     .join(' ')
 }
 
+// The mask only reads alpha; any opaque token does.
+const EDGE_MASK =
+  'linear-gradient(to right, transparent 0%, var(--color-void) 9%, var(--color-void) 91%, transparent 100%)'
+
 export function ScrollLines({ lines, progress }: Props) {
   // The stack drifts up as you scroll, so it is never only the marquees moving.
   const y = useScrollRange(progress, [0, 1], [0, -260])
 
+  // Pause the marquees while the wall is off screen: four infinite
+  // animations running under the rest of the page buy nothing.
+  const root = useRef<HTMLDivElement>(null)
+  const [onScreen, setOnScreen] = useState(true)
+  useEffect(() => {
+    const node = root.current
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(([entry]) => setOnScreen(!!entry?.isIntersecting))
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <motion.div
+      ref={root}
       aria-hidden="true"
       className="flex w-full select-none flex-col justify-center"
       style={{
         y,
-        maskImage: 'linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%)',
-        WebkitMaskImage:
-          'linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%)',
+        maskImage: EDGE_MASK,
+        WebkitMaskImage: EDGE_MASK,
       }}
     >
       {ROWS.map((row, index) => (
@@ -198,15 +236,16 @@ export function ScrollLines({ lines, progress }: Props) {
           lines={lines.slice(index % lines.length).concat(lines.slice(0, index % lines.length))}
           row={row}
           rowIndex={index}
+          running={onScreen}
         />
       ))}
     </motion.div>
   )
 }
 
-function Mark({ mark }: { mark: (typeof MARKS)[number] }) {
+function Mark({ mark, ink }: { mark: (typeof MARKS)[number]; ink: number }) {
   const common = 'mx-[0.3em] inline-block shrink-0 align-middle'
-  const style = { background: mark.color, opacity: mark.opacity }
+  const style = { background: fade(mark.color, mark.strength * ink) }
 
   if (mark.shape === 'dot') {
     return <span className={`${common} h-[0.13em] w-[0.13em] rounded-full`} style={style} />
@@ -236,10 +275,12 @@ function Row({
   lines,
   row,
   rowIndex,
+  running,
 }: {
   lines: string[]
   row: (typeof ROWS)[number]
   rowIndex: number
+  running: boolean
 }) {
   // Two copies of the same sequence; sliding by half the track loops exactly.
   const track = [...lines, ...lines]
@@ -247,12 +288,16 @@ function Row({
   return (
     // No per-row overflow clip: the hero already clips, and clipping here cut
     // the descenders off the serif and rounded rows.
-    <div className="flex items-center" style={{ fontSize: ROW_SIZE, height: ROW_BOX }}>
+    <div
+      className="flex items-center"
+      style={{ fontSize: ROW_SIZE, height: ROW_BOX, color: fade('var(--page-fg)', row.ink) }}
+    >
       <div
         className="flex w-max"
         style={{
           animation: `marquee ${row.speed}s linear infinite`,
           animationDirection: row.reverse ? 'reverse' : 'normal',
+          animationPlayState: running ? 'running' : 'paused',
         }}
       >
         {track.map((line, index) => {
@@ -272,7 +317,6 @@ function Row({
             <span
               key={`${line}-${index}`}
               className="flex shrink-0 items-center whitespace-nowrap leading-none"
-              style={{ opacity: row.opacity }}
             >
               <span
                 className={face.className}
@@ -280,7 +324,7 @@ function Row({
               >
                 {face.titleCase ? toTitle(line) : line}
               </span>
-              <Mark mark={mark} />
+              <Mark mark={mark} ink={row.ink} />
             </span>
           )
         })}

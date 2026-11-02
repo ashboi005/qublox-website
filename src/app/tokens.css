@@ -1,0 +1,186 @@
+/* ===========================================================================
+   QUBLOX tokens: the one place a colour, a face, a size or an ease is named.
+   Hallmark's roles (paper, ink, accent, focus) carry the brand's own values;
+   the project's names (bone, void, signal, the DOS and ERISED inks) sit
+   beside them so the set pieces keep their phosphor.
+   =========================================================================== */
+
+@theme static {
+  /* --- roles ------------------------------------------------------------ */
+  --color-paper: oklch(95.6% 0.007 95);
+  --color-paper-2: oklch(92.2% 0.009 95);
+  --color-paper-3: oklch(88.4% 0.011 95);
+  --color-ink: oklch(17.5% 0.009 275);
+  --color-ink-2: oklch(34% 0.011 275);
+  --color-muted: oklch(47% 0.012 275);
+  --color-rule: oklch(82% 0.01 95);
+  --color-accent: oklch(64.5% 0.233 25);
+  --color-accent-deep: oklch(53% 0.215 27);
+  /* Ink for text set on the brand red; paper for text on the deep red fill. */
+  --color-accent-ink: oklch(17.5% 0.009 275);
+  --color-on-accent-deep: oklch(97.5% 0.01 25);
+  --color-focus: oklch(55% 0.22 27);
+  --color-error: oklch(52% 0.19 27);
+  --color-success: oklch(50% 0.12 150);
+
+  /* --- grounds (the project's names) ------------------------------------ */
+  --color-bone: oklch(95.6% 0.007 95);
+  --color-bone-dim: oklch(92.2% 0.009 95);
+  --color-void: oklch(11.5% 0.012 280);
+  --color-void-2: oklch(15.5% 0.012 280);
+  --color-void-3: oklch(20% 0.013 280);
+  --color-on-void: oklch(93% 0.008 95);
+  --color-on-void-muted: oklch(70% 0.012 275);
+
+  /* --- the Qublox dot --------------------------------------------------- */
+  --color-signal: oklch(64.5% 0.233 25);
+
+  /* --- CRT channel split (lifted from the Google 84 plate) -------------- */
+  --color-chan-red: oklch(65% 0.23 29);
+  --color-chan-blue: oklch(55% 0.22 265);
+  --color-chan-yellow: oklch(88% 0.17 92);
+  --color-chan-green: oklch(87% 0.18 160);
+
+  /* --- phosphor (the trail's spectrum, the hero's bloom) ---------------- */
+  --color-phosphor: oklch(87% 0.18 160);
+  --color-amber: oklch(80% 0.17 75);
+
+  /* --- the set: wood, plastic, glass ------------------------------------ */
+  --color-set-wood: oklch(26% 0.016 60);
+  --color-set-wood-deep: oklch(19% 0.014 60);
+  --color-set-panel: oklch(83% 0.025 85);
+  --color-set-glass: oklch(14% 0.02 190);
+
+  /* --- the terminal: Borland / Turbo C++, not a green VT --------------- */
+  --color-dos-blue: oklch(33% 0.22 264);
+  --color-dos-blue-deep: oklch(25% 0.17 264);
+  --color-dos-grey: oklch(73% 0.004 275);
+  --color-dos-white: oklch(98% 0.005 275);
+  --color-dos-cyan: oklch(92% 0.13 195);
+  --color-dos-yellow: oklch(96% 0.17 108);
+  --color-dos-red: oklch(68% 0.19 25);
+  --color-dos-maroon: oklch(42% 0.17 29);
+  --color-dos-teal: oklch(50% 0.08 195);
+
+  /* --- ERISED ----------------------------------------------------------- */
+  --color-erised-yellow: oklch(86.5% 0.14 82);
+  --color-erised-yellow-deep: oklch(80.5% 0.15 78);
+  --color-erised-blue: oklch(52% 0.1 252);
+  --color-erised-ink: oklch(22.5% 0.004 260);
+
+  /* The magazine's four issues: cream stock and four warm inks each. */
+  --color-mag-1-paper: oklch(94.5% 0.04 80);
+  --color-mag-1-ink: oklch(22% 0.03 45);
+  --color-mag-1-a: oklch(62% 0.19 38);
+  --color-mag-1-b: oklch(79% 0.15 75);
+  --color-mag-1-c: oklch(53% 0.18 29);
+  --color-mag-1-d: oklch(54% 0.07 120);
+  --color-mag-2-paper: oklch(94.5% 0.03 60);
+  --color-mag-2-ink: oklch(21% 0.03 340);
+  --color-mag-2-a: oklch(68% 0.17 355);
+  --color-mag-2-b: oklch(77% 0.16 65);
+  --color-mag-2-c: oklch(51% 0.18 300);
+  --color-mag-2-d: oklch(87% 0.15 98);
+  --color-mag-3-paper: oklch(94% 0.025 85);
+  --color-mag-3-ink: oklch(23% 0.012 260);
+  --color-mag-3-a: oklch(52% 0.1 252);
+  --color-mag-3-b: oklch(86.5% 0.14 82);
+  --color-mag-3-c: oklch(59% 0.19 33);
+  --color-mag-3-d: oklch(56% 0.09 175);
+  --color-mag-4-paper: oklch(92.5% 0.045 75);
+  --color-mag-4-ink: oklch(22% 0.035 50);
+  --color-mag-4-a: oklch(58% 0.18 33);
+  --color-mag-4-b: oklch(43% 0.15 305);
+  --color-mag-4-c: oklch(75% 0.15 70);
+  --color-mag-4-d: oklch(51% 0.08 155);
+
+  /* --- night deco: the closing chapters --------------------------------- */
+  /* Lifted from the Art Deco night plates: indigo sky, neon red, lamp gold. */
+  --color-deco-night: oklch(19% 0.06 290);
+  --color-deco-night-deep: oklch(13.5% 0.04 290);
+  --color-deco-violet: oklch(48% 0.19 285);
+  --color-deco-red: oklch(58% 0.2 29);
+  --color-deco-gold: oklch(81% 0.14 78);
+  --color-deco-cream: oklch(93% 0.04 85);
+  --color-deco-muted: oklch(76% 0.035 85);
+
+  /* --- type ------------------------------------------------------------- */
+  /* Archivo carries display and body: its width axis is the display voice,
+     its normal width the reading voice. Mono is the instruments' outlier
+     (readouts, code, figures); Instrument Serif the marquee's counterweight
+     and the magazine's feature head; Fredoka is ERISED's alone. */
+  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --font-body: var(--font-archivo), 'Archivo', system-ui, sans-serif;
+  --font-outlier: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
+  --font-serif: var(--font-instrument), 'Instrument Serif', Georgia, serif;
+  --font-round: var(--font-fredoka), 'Fredoka', system-ui, sans-serif;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-display-s: clamp(2.25rem, 4vw + 0.5rem, 3.75rem);
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-section: clamp(2.25rem, 3vw + 1rem, 3.75rem);
+  --text-title: clamp(1.25rem, 0.75vw + 0.875rem, 1.625rem);
+  --text-lead: clamp(1.125rem, 0.35vw + 1rem, 1.375rem);
+  --tracking-display: -0.025em;
+
+  /* --- shape ------------------------------------------------------------ */
+  --radius-card: 6px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px oklch(20% 0.01 275 / 0.06);
+  --shadow-lift: 0 24px 60px -24px oklch(10% 0.02 275 / 0.55);
+
+  /* --- motion ----------------------------------------------------------- */
+  /* One family of curves for the whole site: arrivals decelerate long,
+     exits accelerate short, toggles ease both ways. Nothing overshoots. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-snap: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 144px;
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+  --dur-scene: 700ms;
+  --container: 1440px;
+  --gutter: 64px;
+  --gap-columns: 32px;
+  --section-gap-s: 120px;
+  --section-gap: 144px;
+  --section-gap-l: 176px;
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+  --rule-hair: 1px;
+
+  /* The ground the background controller paints, and its ink. */
+  --page-bg: var(--color-paper);
+  --page-fg: var(--color-ink);
+  --ground-dark: 0;
+}
+@media (max-width: 60rem) { :root { --gutter: 24px; --section-gap-s: 80px; --section-gap: 96px; --section-gap-l: 120px; } }
+@media (max-width: 40rem) { :root { --gutter: 16px; --section-gap-s: 56px; --section-gap: 72px; --section-gap-l: 96px; --gap-columns: 16px; } }

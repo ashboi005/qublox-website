@@ -1,4 +1,16 @@
+/* Hallmark · shape: kept · genre: atmospheric · theme: brand · redesign: restyle
+ * paper: oklch(95.6% 0.007 95) · accent: oklch(64.5% 0.233 25) · display: Archivo (width axis) · body: Archivo · hero: kept · nav: kept, wordmark, tuner, two links · footer: kept, the mast · signature: kept, the TV that broadcasts the mark
+ * axes: light/grotesk-heavy/chromatic-red · posture: full palette (each chapter owns its ground: bone, void, DOS blue, deco night) · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R3 V4 · weakest: R, six machines each with their own ink; kept the machines, cut the tracked-caps chrome around them and moved every page label to the reading voice */
+/* Hallmark · dismissed 56 · the two sticky elements are the media and crew scenes, each pinned inside its own section, never on screen together; the nav is fixed, not sticky */
+/* Hallmark · dismissed 54 · About's head is RevealWords rendered as h2#about-heading and Contact's is StretchHeading rendered as h2#contact-heading; the static pass reads the component name */
+/* Hallmark · reworded "Ch 05 — Crew" to "The crew", "Ch 06 — Contact" to the visible "Start a signal" head, "ERISED / EVENTS" to "What the room runs", the module heads to code plus name, "About Qublox" (sr-only) to the visible statement · 54 and 67 named the labels */
+/* Hallmark · dismissed kept onDragEnd · the magazine's swipe handler is still there, rewritten in place with the page turn */
+/* Hallmark · finish-review: subagent · recapture, then 8 findings · 6 resolved (duplicate plate titles, ERISED scrim band, media head size, plate chroma, stock footer line, "Selected work" to "Now showing") · 2 answered (ERISED fold is the timed splash resolving to mark and lead; crew 2+2+1 is the reduced-motion wrap, the rack is one row) */
+/* Hallmark · answered F19 · Archivo's 500 and 700 appear only inside the set pieces (TV badge, slate, terminal); the page runs 400, 600 and 800 */
 @import 'tailwindcss';
+@import './tokens.css';
+@import './base.css' layer(base);
 @import 'lenis/dist/lenis.css';
 
 /* ===========================================================================
@@ -7,73 +19,13 @@
    its own phosphor. That is why the ground colour changes so violently.
    =========================================================================== */
 
-@theme {
-  /* --- grounds ---------------------------------------------------------- */
-  /* Sampled from the supplied artwork rather than guessed, so the site and the
-     logo files agree exactly and the PNG never shows as a box on the ground. */
-  --color-bone: #f2f1ec;
-  --color-bone-dim: #e4e2da;
-  --color-ink: #0f1014;
-  --color-void: #000000;
-
-  /* --- the Qublox dot --------------------------------------------------- */
-  --color-signal: #ff2f36;
-
-  /* --- CRT channel split (lifted from the Google 84 plate) -------------- */
-  --color-chan-red: #ff3b30;
-  --color-chan-blue: #2f6bff;
-  --color-chan-yellow: #ffd23f;
-  --color-chan-green: #3bffa8;
-
-  /* --- phosphor (the trail's spectrum, the hero's bloom) ---------------- */
-  --color-phosphor: #3bffa8;
-  --color-amber: #ffb000;
-
-  /* --- the terminal: Borland / Turbo C++, not a green VT --------------- */
-  --color-dos-blue: #0000a8;
-  --color-dos-blue-deep: #000074;
-  --color-dos-grey: #a8a8a8;
-  --color-dos-white: #ffffff;
-  --color-dos-cyan: #55ffff;
-  --color-dos-yellow: #ffff55;
-  --color-dos-red: #ff5555;
-
-  /* --- ERISED ----------------------------------------------------------- */
-  --color-erised-yellow: #fecb56;
-  --color-erised-yellow-deep: #eeb63c;
-  --color-erised-blue: #3a6ea5;
-  --color-erised-ink: #1e1f20;
-
-  /* --- night deco: the closing chapters ------------------------------- */
-  /* Lifted from the Art Deco night plates: indigo sky, neon red, lamp gold. */
-  --color-deco-night: #150e2c;
-  --color-deco-night-deep: #0b0719;
-  --color-deco-violet: #5b3fc4;
-  --color-deco-red: #e0362c;
-  --color-deco-gold: #f3b843;
-  --color-deco-cream: #f3e7c9;
-
-  /* --- type ------------------------------------------------------------- */
-  --font-display: var(--font-archivo), 'Archivo', system-ui, sans-serif;
-  --font-body: var(--font-space-grotesk), 'Space Grotesk', system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), 'JetBrains Mono', ui-monospace, monospace;
-  --font-round: var(--font-fredoka), 'Fredoka', system-ui, sans-serif;
-  --font-serif: var(--font-instrument), 'Instrument Serif', Georgia, serif;
-  --font-cursive: var(--font-playfair), 'Playfair Display', Georgia, serif;
-
-  /* --- motion ----------------------------------------------------------- */
-  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-snap: cubic-bezier(0.85, 0, 0.15, 1);
-}
 
 /* ===========================================================================
    Base
    =========================================================================== */
 
 :root {
-  color-scheme: dark;
-  --page-bg: var(--color-bone);
-  --page-fg: var(--color-ink);
+  color-scheme: light;
 }
 
 * {
@@ -83,6 +35,7 @@
 html {
   /* Lenis drives the scroll; native smooth would fight it. */
   scroll-behavior: auto;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -91,22 +44,28 @@ body {
   background: var(--page-bg);
   color: var(--page-fg);
   font-family: var(--font-body);
-  font-synthesis-weight: none;
+  font-size: var(--text-md);
+  line-height: 1.55;
+  font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
 
 ::selection {
-  background: var(--color-signal);
-  color: var(--color-bone);
+  background: var(--color-accent-deep);
+  color: var(--color-on-accent-deep);
 }
 
-/* Keyboard focus stays visible on every ground, light or dark. */
+/* Keyboard focus stays visible on every ground, light or dark: a deep red
+   ring with a paper halo, so it holds 3:1 over bone, void, yellow and night
+   alike. Instant, never faded. */
 :focus-visible {
-  outline: 2px solid var(--color-signal);
+  outline: 2px solid var(--color-focus);
   outline-offset: 3px;
+  box-shadow: 0 0 0 5px var(--color-paper);
   border-radius: 2px;
+  transition: none;
 }
 
 /* Skip link — first tab stop on a page that is otherwise pure scroll. */
@@ -115,15 +74,13 @@ body {
   top: 0.5rem;
   left: 0.5rem;
   z-index: 200;
-  padding: 0.65rem 1rem;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
   background: var(--color-ink);
-  color: var(--color-bone);
+  color: var(--color-paper);
   transform: translateY(-150%);
-  transition: transform 180ms var(--ease-snap);
 }
 .skip-link:focus-visible {
   transform: translateY(0);
@@ -133,22 +90,53 @@ body {
    Utilities
    =========================================================================== */
 
+/* Page labels, notes, captions and nav: the reading voice a step down,
+   sentence case, untracked. The instrument voice is `readout`. */
 @utility label {
-  font-family: var(--font-mono);
-  font-size: clamp(0.5625rem, 0.72vw, 0.6875rem);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  letter-spacing: 0;
+  font-weight: 400;
 }
 
-/* Archivo's width axis is the display voice. Scroll stretches it. */
+/* The instruments' own voice, used only inside a set piece (the TV, the
+   cards, the terminal, the slate): mono, lowercase in the source, untracked.
+   A figure or a readout, never a page label. */
+@utility readout {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Archivo's width axis is the display voice. Scroll stretches it. Uppercase
+   heads that can wrap hold a line-height of 1 so lines never touch. */
 @utility display {
   font-family: var(--font-display);
   font-weight: 800;
-  line-height: 0.84;
-  letter-spacing: -0.03em;
+  line-height: 1;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   font-variation-settings: 'wdth' var(--wdth, 100);
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+/* The section head: one size across every chapter, in the display face at
+   normal case. Chapters differ in ground and ink, never in how a head reads. */
+@utility section-head {
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: var(--tracking-display);
+  font-variation-settings: 'wdth' 100;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 @utility edge-x {
@@ -175,8 +163,8 @@ body {
 @utility scanlines {
   background-image: repeating-linear-gradient(
     to bottom,
-    rgb(0 0 0 / 0.28) 0px,
-    rgb(0 0 0 / 0.28) 1px,
+    color-mix(in oklab, var(--color-void) 28%, transparent) 0px,
+    color-mix(in oklab, var(--color-void) 28%, transparent) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -240,9 +228,9 @@ body {
    =========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *:not(.keep-motion),
+  *:not(.keep-motion)::before,
+  *:not(.keep-motion)::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
@@ -277,7 +265,7 @@ body {
    fold, red at the horizon, violet into the sky. Decorative only. */
 @utility deco-sky {
   background:
-    radial-gradient(120% 70% at 50% 115%, color-mix(in srgb, var(--color-deco-red) 38%, transparent), transparent 60%),
-    radial-gradient(90% 60% at 50% -10%, color-mix(in srgb, var(--color-deco-violet) 45%, transparent), transparent 70%),
-    repeating-conic-gradient(from -90deg at 50% 120%, rgb(243 184 67 / 0.035) 0deg 3deg, transparent 3deg 9deg);
+    radial-gradient(120% 70% at 50% 115%, color-mix(in oklab, var(--color-deco-red) 34%, transparent), transparent 60%),
+    radial-gradient(90% 60% at 50% -10%, color-mix(in oklab, var(--color-deco-violet) 40%, transparent), transparent 70%),
+    repeating-conic-gradient(from -90deg at 50% 120%, color-mix(in oklab, var(--color-deco-gold) 4%, transparent) 0deg 3deg, transparent 3deg 9deg);
 }

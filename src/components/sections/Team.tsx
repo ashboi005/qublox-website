@@ -163,10 +163,10 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
         id="team"
         data-ground="void"
         data-channel="team"
-        className="edge-x py-[12vh]"
+        className="edge-x py-[12svh]"
         aria-labelledby="team-heading"
       >
-        <Heading copy={copy} />
+        <Heading copy={copy} count={team.length} />
         <div className="mx-auto mt-12 flex max-w-[76rem] flex-wrap justify-center gap-8">
           {team.map((member, index) => (
             <IdCard key={member._id} member={member} index={index} total={team.length} copy={copy} />
@@ -188,13 +188,14 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
       aria-labelledby="team-heading"
     >
       <div
-        className="sticky top-0 flex h-[100svh] flex-col justify-center overflow-hidden"
+        className="sticky top-0 flex h-[100svh] flex-col overflow-hidden"
         style={{ perspective: '1600px' }}
       >
-        <div className="edge-x pointer-events-none absolute inset-x-0 top-0 z-40 pt-24">
-          <Heading copy={copy} />
+        <div className="edge-x pointer-events-none relative z-40 pt-24">
+          <Heading copy={copy} count={team.length} />
         </div>
 
+        <div className="flex min-h-0 flex-1 items-center pb-6">
         <motion.div
           ref={trackRef}
           className="edge-x flex w-max items-center gap-[clamp(1.5rem,3vw,3rem)]"
@@ -213,25 +214,29 @@ export function Team({ team, copy }: { team: TeamMember[]; copy: TeamSettings })
             />
           ))}
         </motion.div>
-
-        <div className="edge-x pointer-events-none absolute inset-x-0 bottom-0 z-40 pb-6">
-          <div className="rule-t flex items-baseline justify-between pt-3 text-bone/40">
-            <span className="label">{copy.scanner}</span>
-            <span className="label">{team.length} RECORDS ON FILE</span>
-          </div>
         </div>
       </div>
     </section>
   )
 }
 
-function Heading({ copy }: { copy: TeamSettings }) {
+/**
+ * The chapter's head, with the scanner's readout set opposite it: the note,
+ * the reader that issued the cards and how many it holds.
+ */
+function Heading({ copy, count }: { copy: TeamSettings; count: number }) {
   return (
-    <div className="rule-b mx-auto flex max-w-[76rem] items-baseline justify-between pb-3 text-bone/45">
-      <h2 id="team-heading" className="label">
+    <div className="mx-auto flex max-w-[76rem] flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-on-void/15 pb-5">
+      <h2 id="team-heading" className="section-head text-on-void">
         {copy.eyebrow}
       </h2>
-      <span className="label">{copy.note}</span>
+      <p className="label text-right text-on-void-muted">
+        {copy.note}
+        <br />
+        <span className="readout">
+          {copy.scanner}, {count} records on file
+        </span>
+      </p>
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { motion, useScroll } from 'motion/react'
 import { useScrollRange } from '@/lib/useScrollRange'
 import { useRef } from 'react'
+import { useReducedMotion } from '@/lib/useReducedMotion'
 import { TvScreen } from '@/components/hero/TvScreen'
 import { useBroadcast } from '@/components/hero/useBroadcast'
 import { RetroTV } from '@/components/hero/RetroTV'
@@ -19,6 +20,7 @@ import type { SiteSettings } from '@/types/content'
 
 export function Hero({ settings }: { settings: SiteSettings }) {
   const ref = useRef<HTMLElement>(null)
+  const reduced = useReducedMotion()
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ['start start', 'end start'],
@@ -39,13 +41,13 @@ export function Hero({ settings }: { settings: SiteSettings }) {
       ref={ref}
       id="hero"
       data-ground="bone"
-      className="relative h-[220vh]"
+      className="relative h-[220svh]"
       data-channel="hero"
       aria-label="Qublox"
     >
       <div className="sticky top-0 flex h-[100svh] items-center justify-center overflow-hidden">
         {/* ---- the plate copy of the scrolling column, behind the set ---- */}
-        <div className="pointer-events-none absolute top-1/2 left-1/2 flex h-[190vh] w-[190vw] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
+        <div className="pointer-events-none absolute top-1/2 left-1/2 flex h-[190svh] w-[190vw] -translate-x-1/2 -translate-y-1/2 items-center justify-center">
           <ScrollLines lines={lines} progress={scrollYProgress} />
         </div>
 
@@ -77,22 +79,39 @@ export function Hero({ settings }: { settings: SiteSettings }) {
           style={{ opacity: chromeOpacity }}
           className="pointer-events-none absolute inset-0 z-20"
         >
-          {/* bottom instrument strip, lifted from the cassette plate */}
-          <div className="edge-x rule-t absolute inset-x-0 bottom-0 flex items-center justify-between py-4 text-ink/45">
-            <span className="label">{hero.serial}</span>
-            <span className="label hidden sm:inline">{settings.location}</span>
-            <span className="label">{hero.established}</span>
+          {/* bottom instrument strip, lifted from the cassette plate: the
+              set's papers, quiet, in the reading voice. */}
+          <div className="edge-x rule-t absolute inset-x-0 bottom-0 grid grid-cols-2 items-center gap-x-6 py-4 text-muted sm:grid-cols-3">
+            <span className="label font-normal tabular-nums">{hero.serial}</span>
+            <span className="label hidden text-center font-normal tabular-nums sm:inline">
+              {settings.location}
+            </span>
+            <span className="label text-right font-normal">{hero.established}</span>
           </div>
 
-          {/* scroll cue */}
-          <div className="absolute inset-x-0 bottom-[3.4rem] flex justify-center">
-            <motion.span
-              className="label text-ink/40"
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              {hero.scrollCue}
-            </motion.span>
+          {/* scroll cue: the words, and a short hairline under them that
+              breathes downward. Slow, small, and still under reduced motion. */}
+          <div className="absolute inset-x-0 bottom-[3.75rem] flex flex-col items-center gap-2">
+            <span className="label text-ink-2">{hero.scrollCue}</span>
+            <span aria-hidden="true" className="relative block h-6 w-px overflow-hidden">
+              <span className="absolute inset-0 bg-rule" />
+              <motion.span
+                className="absolute inset-x-0 top-0 block h-full origin-top bg-ink-2"
+                initial={false}
+                animate={reduced ? { scaleY: 0.5, y: '0%' } : { scaleY: [0, 1, 1], y: ['0%', '0%', '100%'] }}
+                transition={
+                  reduced
+                    ? { duration: 0 }
+                    : {
+                        duration: 2.6,
+                        times: [0, 0.45, 1],
+                        ease: [[0.16, 1, 0.3, 1], [0.65, 0, 0.35, 1]],
+                        repeat: Infinity,
+                        repeatDelay: 0.6,
+                      }
+                }
+              />
+            </span>
           </div>
         </motion.div>
       </div>

@@ -16,7 +16,7 @@ export function Vignette() {
       style={{
         opacity: 'var(--ground-dark, 0)',
         background:
-          'radial-gradient(120% 90% at 50% 45%, transparent 38%, rgba(0,0,0,0.42) 78%, rgba(0,0,0,0.78) 100%)',
+          'radial-gradient(120% 90% at 50% 45%, transparent 38%, color-mix(in oklab, var(--color-void) 42%, transparent) 78%, color-mix(in oklab, var(--color-void) 78%, transparent) 100%)',
       }}
     />
   )

@@ -81,8 +81,8 @@ export function ErisedMark({ progress }: { progress: MotionValue<number> }) {
 
         <motion.path
           d={OUTLINE}
-          fill="#3a6ea5"
           style={{
+            fill: 'var(--color-erised-blue)',
             scale: outlineScale,
             rotate: bodySpin,
             x: 1.6,
@@ -95,8 +95,7 @@ export function ErisedMark({ progress }: { progress: MotionValue<number> }) {
         <g filter="url(#erised-goo)">
           <motion.path
             d={INK}
-            fill="#1e1f20"
-            style={{ scale: bodyScale, rotate: bodySpin, originX: '50px', originY: '50px' }}
+            style={{ fill: 'var(--color-erised-ink)', scale: bodyScale, rotate: bodySpin, originX: '50px', originY: '50px' }}
           />
           {FLECKS.map((fleck) => (
             <Fleck key={`${fleck.x}-${fleck.y}`} fleck={fleck} progress={progress} />
@@ -107,7 +106,15 @@ export function ErisedMark({ progress }: { progress: MotionValue<number> }) {
       {/* ---- what the ink resolves into -------------------------------- */}
       <motion.div
         className="absolute inset-0 grid place-items-center"
-        style={{ opacity: artOpacity, scale: artScale }}
+        style={{
+          opacity: artOpacity,
+          scale: artScale,
+          // The file's ground is a printed square a shade off the page's
+          // yellow. Feathering its corners lets the mark sit on the page
+          // instead of on a tile.
+          maskImage: 'radial-gradient(closest-side, var(--color-erised-ink) 78%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(closest-side, var(--color-erised-ink) 78%, transparent 100%)',
+        }}
       >
         <Image
           src="/brand/erised-logo.png"
@@ -139,8 +146,7 @@ function Fleck({
       cx={50 + fleck.x}
       cy={50 + fleck.y}
       r={fleck.r}
-      fill="#1e1f20"
-      style={{ scale, x, y, originX: `${50 + fleck.x}px`, originY: `${50 + fleck.y}px` }}
+      style={{ fill: 'var(--color-erised-ink)', scale, x, y, originX: `${50 + fleck.x}px`, originY: `${50 + fleck.y}px` }}
     />
   )
 }

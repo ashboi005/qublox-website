@@ -13,18 +13,18 @@ export default function StudioPage() {
           minHeight: '100dvh',
           display: 'grid',
           placeItems: 'center',
-          background: '#101114',
-          color: '#f2f1ec',
-          fontFamily: 'ui-monospace, monospace',
+          background: 'var(--color-ink)',
+          color: 'var(--color-paper)',
+          fontFamily: 'var(--font-mono)',
           padding: '2rem',
         }}
       >
         <div style={{ maxWidth: '46ch', lineHeight: 1.7, fontSize: '0.875rem' }}>
-          <p style={{ color: '#3bffa8', letterSpacing: '0.16em' }}>STUDIO OFFLINE</p>
+          <p style={{ color: 'var(--color-phosphor)' }}>Studio offline</p>
           <p>
             Set <code>NEXT_PUBLIC_SANITY_PROJECT_ID</code> in <code>.env.local</code> and restart
             the dev server. Until then the site renders from its bundled content, which is a
-            complete set — nothing is missing.
+            complete set: nothing is missing.
           </p>
         </div>
       </main>

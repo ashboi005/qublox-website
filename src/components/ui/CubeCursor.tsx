@@ -372,7 +372,7 @@ export function CubeCursor() {
       className="pointer-events-none fixed top-0 left-0 z-[150] hidden md:block"
       style={{ x, y, translateX: '-50%', translateY: '-50%' }}
     >
-      <canvas ref={canvasRef} style={{ width: BOX, height: BOX, display: 'block' }} />
+      <canvas ref={canvasRef} aria-hidden="true" style={{ width: BOX, height: BOX, display: "block" }} />
     </motion.div>
   )
 }

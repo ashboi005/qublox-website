@@ -94,7 +94,7 @@ function Hit({ hit, progress }: { hit: Hit; progress: MotionValue<number> }) {
         scale,
       }}
     >
-      <path d={SPLAT_VARIANTS[hit.shape % SPLAT_VARIANTS.length]} fill="#fecb56" />
+      <path d={SPLAT_VARIANTS[hit.shape % SPLAT_VARIANTS.length]} style={{ fill: 'var(--color-erised-yellow)' }} />
     </motion.svg>
   )
 }

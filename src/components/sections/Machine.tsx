@@ -2,7 +2,7 @@
 
 import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { useRef, useState } from 'react'
-import { BEATS, RetroDesktop } from '@/components/tech/RetroDesktop'
+import { BEATS, RetroDesktop, eased, easeOutCurve } from '@/components/tech/RetroDesktop'
 import { TurboWindow } from '@/components/tech/TurboWindow'
 import { Manifest } from '@/components/tech/Manifest'
 import { useReducedMotion } from '@/lib/useReducedMotion'
@@ -36,24 +36,31 @@ export function Machine({ settings }: { settings: SiteSettings }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
 
   // ---- cold start -------------------------------------------------------
-  const dotScale = useScrollRange(scrollYProgress, [0, 0.03, BEATS.strike[1]], [0, 1.6, 1])
-  const dotOpacity = useScrollRange(scrollYProgress, [0, 0.02, 0.06, 0.08], [0, 1, 1, 0])
-  const lineWidth = useScrollRange(scrollYProgress, [...BEATS.scan], ['0%', '100%'])
+  // Each beat is mapped through the site's curves (see `eased`), so nothing on
+  // the tube starts or stops at full speed at the edge of its range.
+  const dotScale = useScrollRange(scrollYProgress, ...eased([0, 0.03, BEATS.strike[1]], [0, 1.4, 1]))
+  const dotOpacity = useScrollRange(scrollYProgress, ...eased([0, 0.02, 0.06, 0.08], [0, 1, 1, 0]))
+  // The scan line is drawn by scaling a full-width line from its centre: a
+  // transform, not a width.
+  const lineScale = useScrollRange(scrollYProgress, ...eased(BEATS.scan, [0, 1], easeOutCurve, 8))
   const lineOpacity = useScrollRange(
     scrollYProgress,
-    [BEATS.scan[0] - 0.01, BEATS.scan[0] + 0.01, BEATS.raster[0], BEATS.raster[1]],
-    [0, 1, 1, 0],
+    ...eased([BEATS.scan[0] - 0.01, BEATS.scan[0] + 0.01, BEATS.raster[0], BEATS.raster[1]], [0, 1, 1, 0]),
   )
   const noiseOpacity = useScrollRange(
     scrollYProgress,
-    [BEATS.noise[0], BEATS.noise[0] + 0.02, BEATS.noise[1] - 0.01, BEATS.noise[1]],
-    [0, 0.5, 0.5, 0],
+    ...eased([BEATS.noise[0], BEATS.noise[0] + 0.02, BEATS.noise[1] - 0.01, BEATS.noise[1]], [0, 0.4, 0.4, 0]),
   )
-  const rasterHeight = useScrollRange(scrollYProgress, [...BEATS.raster], ['0%', '100%'])
+  // The raster opens from the centre line outward as a clip, so the screen
+  // under it never changes size and nothing inside it reflows.
+  const rasterOpen = useScrollRange(scrollYProgress, ...eased(BEATS.raster, [0, 1], easeOutCurve, 8))
+  const rasterClip = useTransform(rasterOpen, (v) => {
+    const edge = ((1 - v) * 50).toFixed(3)
+    return `inset(${edge}% 0% ${edge}% 0%)`
+  })
   const bootOpacity = useScrollRange(
     scrollYProgress,
-    [BEATS.boot[0], BEATS.boot[0] + 0.02, BEATS.paint[0], BEATS.paint[1]],
-    [0, 1, 1, 0],
+    ...eased([BEATS.boot[0], BEATS.boot[0] + 0.02, BEATS.paint[0], BEATS.paint[1]], [0, 1, 1, 0]),
   )
   const bootLines = useScrollRange(scrollYProgress, [...BEATS.boot], [0, BOOT.length])
 
@@ -79,7 +86,7 @@ export function Machine({ settings }: { settings: SiteSettings }) {
         id="tech"
         data-ground="void"
         data-channel="tech"
-        className="edge-x relative py-[14vh]"
+        className="edge-x relative py-[14svh]"
         aria-labelledby="tech-heading"
       >
         <div className="mx-auto max-w-[80rem]">
@@ -97,18 +104,28 @@ export function Machine({ settings }: { settings: SiteSettings }) {
       id="tech"
       data-ground="void"
       data-channel="tech"
-      className="relative h-[700vh]"
+      className="relative h-[700svh]"
       aria-labelledby="tech-heading"
     >
-      <div className="sticky top-0 h-[100svh] overflow-hidden bg-black">
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-void">
         {/* the tube strikes */}
         <motion.span
-          className="absolute top-1/2 left-1/2 block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
-          style={{ scale: dotScale, opacity: dotOpacity, boxShadow: '0 0 60px 18px rgba(255,255,255,0.75)' }}
+          className="absolute top-1/2 left-1/2 block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-dos-white"
+          style={{
+            scale: dotScale,
+            opacity: dotOpacity,
+            boxShadow: '0 0 48px 14px color-mix(in oklab, var(--color-dos-white) 60%, transparent)',
+          }}
+          aria-hidden="true"
         />
         <motion.span
-          className="absolute top-1/2 left-1/2 block h-[3px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
-          style={{ width: lineWidth, opacity: lineOpacity, boxShadow: '0 0 40px 8px rgba(255,255,255,0.8)' }}
+          className="absolute inset-x-0 top-1/2 block h-[2px] -translate-y-1/2 bg-dos-white will-change-transform"
+          style={{
+            scaleX: lineScale,
+            opacity: lineOpacity,
+            boxShadow: '0 0 28px 6px color-mix(in oklab, var(--color-dos-white) 55%, transparent)',
+          }}
+          aria-hidden="true"
         />
 
         {/* static in the gap, so the hold is not dead air */}
@@ -126,17 +143,20 @@ export function Machine({ settings }: { settings: SiteSettings }) {
         {/* the raster opens, and never closes again — everything after this
             paints on top of the same blue screen */}
         <motion.div
-          className="absolute inset-x-0 top-1/2 -translate-y-1/2 overflow-hidden bg-dos-blue"
-          style={{ height: rasterHeight }}
+          className="absolute inset-0 overflow-hidden bg-dos-blue"
+          style={{ clipPath: rasterClip }}
         >
           <div className="scanlines absolute inset-0 z-10 opacity-25" aria-hidden="true" />
           <div
             className="pointer-events-none absolute inset-0 z-10"
-            style={{ background: 'radial-gradient(88% 72% at 50% 50%, transparent 54%, rgba(0,0,0,0.5) 100%)' }}
+            style={{
+              background:
+                'radial-gradient(88% 72% at 50% 50%, transparent 54%, color-mix(in oklab, var(--color-void) 50%, transparent) 100%)',
+            }}
             aria-hidden="true"
           />
           <motion.pre
-            className="absolute inset-0 overflow-hidden px-[max(1.25rem,5vw)] py-[9vh] font-mono text-[clamp(0.6rem,1.3vw,0.9rem)] leading-[1.95] text-dos-grey"
+            className="absolute inset-0 overflow-hidden px-[max(1.25rem,5vw)] py-[9svh] font-mono text-[clamp(0.75rem,1.3vw,0.95rem)] leading-[1.9] text-dos-grey"
             style={{ opacity: bootOpacity }}
             aria-hidden="true"
           >
@@ -144,7 +164,7 @@ export function Machine({ settings }: { settings: SiteSettings }) {
           </motion.pre>
 
           {/* the operating system, painting over the boot screen */}
-            <RetroDesktop progress={scrollYProgress} machine={machine}>
+          <RetroDesktop progress={scrollYProgress} machine={machine}>
             <TurboWindow command={COMMAND} typed={typed} fileName={machine.fileName}>
               <Manifest settings={settings} revealed={revealed} />
             </TurboWindow>
@@ -157,11 +177,12 @@ export function Machine({ settings }: { settings: SiteSettings }) {
 
 function BootReadout({ lines, count }: { lines: string[]; count: MotionValue<number> }) {
   // Every line renders; a clip reveals them. One transform per frame rather
-  // than one state update per line.
-  const clip = useTransform(
-    count,
-    (value) => `inset(0 0 ${Math.max(0, 100 - (value / lines.length) * 100)}% 0)`,
-  )
+  // than one state update per line. The clip steps a whole line at a time, the
+  // way a BIOS prints, so a line is never shown sliced through its middle.
+  const clip = useTransform(count, (value) => {
+    const shown = Math.min(lines.length, Math.max(0, Math.floor(value + 0.0001)))
+    return `inset(0 0 ${(100 - (shown / lines.length) * 100).toFixed(3)}% 0)`
+  })
   return (
     <motion.span className="block whitespace-pre" style={{ clipPath: clip }}>
       {lines.join('\n')}

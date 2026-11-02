@@ -7,9 +7,11 @@
  * halftone at roughly a dozen SVG nodes instead of five hundred.
  */
 export function DitherPortrait({ hue, seed }: { hue: number; seed: string }) {
-  const light = `hsl(${hue} 62% 72%)`
-  const mid = `hsl(${hue} 55% 46%)`
-  const dark = `hsl(${hue} 48% 16%)`
+  const light = `oklch(80% 0.11 ${hue})`
+  const mid = `oklch(58% 0.12 ${hue})`
+  const dark = `oklch(22% 0.05 ${hue})`
+  // Masks read luminance, so the lighting ramps are drawn in the paper token.
+  const white = 'var(--color-dos-white)'
   const id = (name: string) => `${name}-${seed}`
 
   return (
@@ -33,14 +35,18 @@ export function DitherPortrait({ hue, seed }: { hue: number; seed: string }) {
 
         {/* lighting: key from upper left, so the bands read as a face */}
         <radialGradient id={id('key')} cx="0.34" cy="0.28" r="0.62">
-          <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-          <stop offset="55%" stopColor="#fff" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+          <stop offset="0%" stopColor={white} stopOpacity="1" />
+          <stop offset="55%" stopColor={white} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={white} stopOpacity="0" />
         </radialGradient>
         <radialGradient id={id('fill')} cx="0.5" cy="0.42" r="0.8">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0.05" />
+          <stop offset="0%" stopColor={white} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={white} stopOpacity="0.05" />
         </radialGradient>
+        {/* scan interference: one tiled line rather than fifty rects */}
+        <pattern id={id('scan')} width="120" height="3" patternUnits="userSpaceOnUse">
+          <rect width="120" height="1" fill="var(--color-void)" />
+        </pattern>
         <mask id={id('m-key')}>
           <rect width="120" height="150" fill={`url(#${id('key')})`} />
         </mask>
@@ -57,11 +63,7 @@ export function DitherPortrait({ hue, seed }: { hue: number; seed: string }) {
       </g>
 
       {/* scan interference across the plate */}
-      <g opacity="0.25">
-        {Array.from({ length: 50 }, (_, i) => (
-          <rect key={i} y={i * 3} width="120" height="1" fill="#000" />
-        ))}
-      </g>
+      <rect width="120" height="150" fill={`url(#${id('scan')})`} opacity="0.25" />
     </svg>
   )
 }

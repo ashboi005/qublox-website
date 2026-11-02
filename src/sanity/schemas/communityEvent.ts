@@ -9,13 +9,13 @@ export const communityEvent = defineType({
     defineField({
       name: 'kind',
       type: 'string',
-      options: { list: ['SCREENING', 'WORKSHOP', 'TALK', 'PUBLICATION', 'JAM'] },
+      options: { list: ['Screening', 'Workshop', 'Talk', 'Publication', 'Jam'] },
       validation: (r) => r.required(),
     }),
     defineField({
       name: 'date',
       type: 'string',
-      description: 'Displayed verbatim, e.g. 12 SEP 2026.',
+      description: 'Displayed verbatim, e.g. 12 Sep 2026.',
       validation: (r) => r.required(),
     }),
     defineField({ name: 'location', type: 'string' }),
@@ -33,7 +33,7 @@ export const communityEvent = defineType({
       options: { list: ['upcoming', 'past'], layout: 'radio' },
       initialValue: 'upcoming',
     }),
-    defineField({ name: 'seats', type: 'string', description: 'e.g. 40 SEATS or SOLD OUT' }),
+    defineField({ name: 'seats', type: 'string', description: 'e.g. 40 seats or Sold out' }),
     defineField({ name: 'order', type: 'number', initialValue: 0 }),
   ],
   orderings: [

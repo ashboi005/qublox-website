@@ -7,7 +7,7 @@ import { useReducedMotion } from '@/lib/useReducedMotion'
 /** How long each channel holds before the set tunes itself to the next one. */
 const DWELL_MS = 5000
 /** How long the picture takes to re-converge after a change. */
-const GLITCH_MS = 460
+const GLITCH_MS = 640
 
 /**
  * What the television is showing, and the fault that runs through the picture
@@ -35,8 +35,13 @@ export function useBroadcast(count: number) {
   const glitch = useMotionValue(0)
   const timer = useRef<number | null>(null)
 
+  // The tear lands on the same frame as the cut, so the swap itself is never
+  // seen clean; the re-convergence is a long deceleration with no overshoot.
+  // A change that arrives mid-settle stops the running one first, so two
+  // settles never fight over the value.
   const shred = useCallback(() => {
     if (reduced) return
+    glitch.stop()
     glitch.set(1)
     animate(glitch, 0, { duration: GLITCH_MS / 1000, ease: [0.16, 1, 0.3, 1] })
   }, [glitch, reduced])

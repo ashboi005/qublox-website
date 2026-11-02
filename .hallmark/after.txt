@@ -1,0 +1,34 @@
+render tier: 10 screenshots in /Users/ashwath/Code/qublox-website/.hallmark/shots (1280x800, 1440x900, 1920x1080 folds; 1440 and 375 full pages)
+http://localhost:3000/
+  FAIL 56 :1 [1280px] two sticky top:0 elements: div.sticky.top-0 + div.sticky.top-0 | fix: Offset the second sticky by banner height
+  REFLEX 39b :1 [1440px] control height outside 44 to 52px: button.relative 91px | fix: Marketing controls stand 44 to 52px; app UI 32 to 40px with a 44px hit target
+  REFLEX 72 :1 [375px] text runs to the edge of the screen (p.mt-2.text-sm) | fix: Give the page a gutter: 16px or more at each side on a phone
+  REFLEX 80 :1 [1440px] drawn illustration: div.@container (300x188, 6 shapes); div.@container (300x188, 11 shapes); div.sticky (1440x… | fix: A photograph (theme.mjs photos), the product built, or type at scale; SVG is for icons, logos and labelled charts or diagrams (imagery.md § 7)
+  REFLEX 81 :1 [1440px] 16 empty pictures: div.pointer-events-none 321x321, a gradient with nothing in it; div.pointer-events-none 509… | fix: Put the picture in: the user's image, a library photograph (theme.mjs photos) or the product built at full fidelity; the wash is only a loading colour (imagery.md § 3)
+  WARN 40 :1 [1280px] contrast drops to 1.00:1 over the gradient behind span.readout.mt-[3%] "vol" | fix: Check the text where the gradient is darkest or lightest; give the label its own ground
+  WARN 40 :1 [1280px] contrast drops to 3.01:1 over the gradient behind span.readout.leading-none "model qx-crt, solid stat"
+  WARN F20 :1 [1440px] div.mx-auto leaves one item alone on its last row (2 + 2 + 1) | fix: Change the count or the columns so the last row is not an orphan
+  ANSWERED F19 :1 [1440px] 5 font weights in running use (400, 500, 600, 700, 800)
+  NOTE 44c :1 [1440px] hero ends at 84px of a 900px screen | fix: Fill the first screen with the visual or the headline, not with copy
+  NOTE 58 :1 [1440px] 212 words on one screen (from y=12800) | fix: One idea per screen: cut to about 80 words, make the section an object
+  NOTE 79 :1 [1440px] 816px of nothing between the hero's last content (y 84) and the fold | fix: Centre the content in the screen and grow the visual or the head (layout.md § 6); never fill it with copy
+.hallmark/before.json
+  FAIL kept :1 handlers the page had before and no longer has: onDragEnd={(_, info) => { if (info.offset.x < -… | fix: Restore each one, or record it in the stamp: /* Hallmark · dropped <item>, <item> · <the reason> */
+  WARN kept :1 headings gone or reworded since the before record: selected work, custom software, ai agents, film production, post + vfx | fix: Restore it, or record it in the stamp: /* Hallmark · reworded "<old>" to "<new>" · <the gate that named it> */ or dropped <item> · <the reason>
+http://localhost:3000/erised
+  REFLEX 39b :1 [1440px] control height outside 44 to 52px: button.relative 297px, button.relative 297px, button.relative 297px
+  REFLEX 59 :1 [1440px] smallest gap between sections is 0px (gaps: 0, 46) | fix: 120px or more between sections, by the --section-gap steps
+  ANSWERED F19 :1 [1440px] 4 font weights in running use (400, 500, 600, 700)
+  NOTE 44c :1 [1440px] hero ends at 84px of a 900px screen
+  NOTE 58 :1 [1440px] 130 words on one screen (from y=1000)
+  NOTE 77 :1 [1440px] 3 sections, hero and footer included | fix: A landing strip, not a page: six to nine sections, five on a thin prompt (layout.md § 3)
+  NOTE 79 :1 [1440px] 816px of nothing between the hero's last content (y 84) and the fold
+src/components/community/ErisedEvents.tsx
+  WARN 49 :110 long clickable label "No. Read the issue Archived" without nowrap | fix: Shorten the label or set nowrap
+src/components/sections/About.tsx
+  DISMISSED 54 :29 section labelled by <revealwords> with no heading element
+src/components/sections/Contact.tsx
+  DISMISSED 54 :57 section labelled by <stretchheading> with no heading element
+sloplint: 2 FAIL, 6 REFLEX, 5 WARN, 2 ANSWERED, 2 DISMISSED, 7 NOTE across 43 file(s) and 2 URL(s).
+kept: links 22/22, fields 6/6, handlers 17/18, headings 18/27 (4 dropped on record), figures 9/9; before 117 FAIL, 25 REFLEX, now 2 FAIL, 6 REFLEX
+compare: .hallmark/compare.html shows before and after side by side

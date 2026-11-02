@@ -117,8 +117,8 @@ export const SPLAT_DROPS = [
 
 export function Splat({
   className,
-  fill = '#fecb56',
-  stroke = '#3a6ea5',
+  fill = 'var(--color-erised-yellow)',
+  stroke = 'var(--color-erised-blue)',
   strokeWidth = 3,
 }: {
   className?: string
@@ -130,8 +130,7 @@ export function Splat({
     <svg viewBox="0 0 100 100" className={className} aria-hidden="true" preserveAspectRatio="none">
       <path
         d={SPLAT_MAIN}
-        fill={fill}
-        stroke={stroke}
+        style={{ fill, stroke }}
         strokeWidth={strokeWidth}
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"

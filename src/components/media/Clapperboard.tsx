@@ -3,8 +3,16 @@
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { useReducedMotion } from '@/lib/useReducedMotion'
-import { useScrollRange } from '@/lib/useScrollRange'
 import type { MediaSettings } from '@/types/content'
+import {
+  EASE_IN,
+  EASE_IN_OUT,
+  EASE_OUT,
+  LINEAR,
+  SCRUB_IN,
+  SCRUB_OUT,
+  useEasedRange,
+} from './useTrailPath'
 
 /**
  * The cut into CH 03.
@@ -19,11 +27,12 @@ import type { MediaSettings } from '@/types/content'
  *
  * Beats, over the section's own scroll:
  *
- *   0.00 – 0.34  the slate rushes in and squares up to the lens
- *   0.34 – 0.44  it holds, sticks open
- *   0.44 – 0.52  CLAP — the arm slams and the whole board jolts
- *   0.52 – 0.66  it holds shut, covering everything
- *   0.66 – 0.88  it is pulled up out of frame, onto black
+ *   0.00 – 0.30  the slate swings in and squares up to the lens
+ *   0.30 – 0.43  it holds, sticks open
+ *   0.43 – 0.49  CLAP — the arm accelerates shut and lands, once
+ *   0.49 – 0.60  it holds shut, covering everything
+ *   0.60 – 0.70  the sticks open again
+ *   0.70 – 0.92  it is pulled back and out of frame, onto black
  *
  * It sits above the header on purpose. A transition that covers the page
  * except for the fixed chrome does not read as a cut, it reads as a modal.
@@ -37,18 +46,35 @@ function Stripes({ count = 12 }: { count?: number }) {
         <span
           key={i}
           className="h-full flex-1 skew-x-[-18deg]"
-          style={{ background: i % 2 === 0 ? '#f2f1ec' : '#101114' }}
+          style={{
+            background: i % 2 === 0 ? 'var(--color-bone)' : 'var(--color-void-2)',
+          }}
         />
       ))}
     </span>
   )
 }
 
+/**
+ * One field on the slate: the printed caption small and lowercase, the value
+ * chalked in large. That is how a real board reads, and it keeps the only
+ * caps on the slate at display size.
+ */
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-baseline gap-[0.6em] border-b border-white/20 pb-[0.28em]">
-      <span className="w-[4.6em] shrink-0 text-white/45">{label}</span>
-      <span className="truncate text-white">{value}</span>
+    <div className="flex items-baseline gap-[1em] border-b border-on-void/20 pb-[0.4em]">
+      <span
+        className="w-[4.2rem] shrink-0 font-mono text-on-void-muted sm:w-[6.5rem]"
+        style={{ fontSize: 'clamp(0.75rem, 1.5vmin, 1rem)' }}
+      >
+        {label}
+      </span>
+      <span
+        className="truncate font-display font-bold tracking-[-0.01em] text-on-void"
+        style={{ fontSize: 'clamp(1rem, 3.6vmin, 2.25rem)', fontVariationSettings: "'wdth' 112" }}
+      >
+        {value}
+      </span>
     </div>
   )
 }
@@ -123,9 +149,9 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
    * The slate is carried into frame, claps, opens, and is taken back out.
    *
    *   0.00 – 0.30  swung up into the lens from below and to the left
-   *   0.30 – 0.44  held square to it, sticks open
-   *   0.44 – 0.52  CLAP — the arm slams and the board recoils
-   *   0.52 – 0.60  held shut
+   *   0.30 – 0.43  held square to it, sticks open
+   *   0.43 – 0.49  CLAP — the arm accelerates shut and the board takes the hit
+   *   0.49 – 0.60  held shut
    *   0.60 – 0.70  the sticks open again
    *   0.70 – 0.92  pulled back and away, out of the top corner
    *
@@ -141,25 +167,37 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
   const ARRIVE = 0.3
   const LEAVE = 0.7
   const GONE = 0.92
+  /** The frame the sticks meet. Everything about the cut keys off it. */
+  const IMPACT = 0.49
 
-  const scale = useScrollRange(progress, [0, ARRIVE, LEAVE, GONE], [0.08, 1, 1, 0.05])
-  const boardX = useScrollRange(progress, [0, ARRIVE, LEAVE, GONE], ['-58%', '0%', '0%', '54%'])
-  const boardY = useScrollRange(progress, [0, ARRIVE, LEAVE, GONE], ['68%', '0%', '0%', '-80%'])
-  const swing = useScrollRange(progress, [0, ARRIVE, LEAVE, GONE], [-38, 0, 0, 40])
+  // In: decelerates onto its mark. Held: nothing moves. Out: accelerates away.
+  // One curve per segment, so the board never starts or stops dead.
+  const travelStops = [0, ARRIVE, LEAVE, GONE]
+  const travelEase = [SCRUB_OUT, LINEAR, SCRUB_IN]
+  const scale = useEasedRange(progress, travelStops, [0.08, 1, 1, 0.05], travelEase)
+  const boardX = useEasedRange(progress, travelStops, ['-58%', '0%', '0%', '54%'], travelEase)
+  const boardY = useEasedRange(progress, travelStops, ['68%', '0%', '0%', '-80%'], travelEase)
+  const swing = useEasedRange(progress, travelStops, [-38, 0, 0, 40], travelEase)
 
   /**
-   * The clap. It overshoots so the arm bounces off the jaw rather than
-   * arriving at it, holds shut, then opens again before the board is taken
-   * away — a slate is carried open, in and out.
+   * The clap. The arm accelerates into the jaw and stops on it: one landing,
+   * no bounce. A stick that rebounds off its mark reads as jitter when it is
+   * scrubbed by hand, and a cut is decisive. It holds shut, then opens again
+   * before the board is taken away, since a slate is carried open, in and out.
    */
-  const armAngle = useScrollRange(
+  const armAngle = useEasedRange(
     progress,
-    [0, 0.44, 0.5, 0.52, 0.56, 0.6, LEAVE],
-    [-30, -30, 1.5, -4, 0, 0, -34],
+    [0, 0.43, IMPACT, 0.6, LEAVE],
+    [-30, -30, 0, 0, -30],
+    [LINEAR, EASE_IN, LINEAR, EASE_IN_OUT],
   )
 
-  // The whole board recoils from the impact.
-  const jolt = useScrollRange(progress, [0.49, 0.505, 0.53, 0.56], [0, 1.6, -0.7, 0])
+  // The board takes the hit once: a short dip on contact that settles out
+  // long. A single excursion, never a wobble either side of rest.
+  const jolt = useEasedRange(progress, [IMPACT, IMPACT + 0.008, 0.56], [0, 0.6, 0], [
+    EASE_OUT,
+    EASE_OUT,
+  ])
 
   /**
    * The chapter's black, cut in on the frame the sticks meet — and taken away
@@ -178,7 +216,12 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
   // Completes *on* the impact rather than starting from it, so the frame the
   // sticks meet is already black. Beginning at 0.50 left the sticks closing
   // over a page that was still visible through the gap the open arm makes.
-  const backing = useScrollRange(progress, [0.484, 0.499, 0.7, 0.8], [0, 1, 1, 0])
+  const backing = useEasedRange(
+    progress,
+    [IMPACT - 0.012, IMPACT, LEAVE, 0.8],
+    [0, 1, 1, 0],
+    [EASE_IN, LINEAR, EASE_IN_OUT],
+  )
 
   /**
    * `rotate` and `rotateZ` are the same transform, so the swing and the recoil
@@ -189,13 +232,15 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
 
   return (
     <>
-      <motion.div className="absolute inset-0 bg-black" style={{ opacity: backing }} />
+      <motion.div className="absolute inset-0 bg-void" style={{ opacity: backing }} />
 
       <motion.div className="absolute inset-0 grid place-items-center">
         <motion.div
           // Must exceed the frame on *both* axes or a tall viewport shows the
           // page around the board. At 16:10 that means the width has to clear
-          // 1.6 viewport heights as well as the viewport's own width.
+          // 1.6 viewport heights as well as the viewport's own width. This
+          // stays `vh`, the large viewport, on purpose: it is a cover, and it
+          // has to cover the frame with the browser chrome retracted too.
           className="relative aspect-[16/10] w-[max(106vw,170vh)]"
           style={{ scale, rotate, x: boardX, y: boardY }}
         >
@@ -204,13 +249,13 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
             className="absolute inset-x-0 top-0 h-[15%] origin-left"
             style={{ rotate: armAngle }}
           >
-            <div className="relative h-full w-full overflow-hidden rounded-[0.4vmin] bg-[#101114] shadow-[0_1vmin_2vmin_rgba(0,0,0,0.6)]">
+            <div className="relative h-full w-full overflow-hidden rounded-[0.4vmin] bg-void-2 shadow-[0_1vmin_2.5vmin_color-mix(in_oklab,var(--color-void)_55%,transparent)]">
               <Stripes />
             </div>
           </motion.div>
 
           {/* ---- the jaw the arm lands on ------------------------------ */}
-          <div className="absolute inset-x-0 top-[15.5%] h-[11%] overflow-hidden rounded-[0.4vmin] bg-[#101114]">
+          <div className="absolute inset-x-0 top-[15.5%] h-[11%] overflow-hidden rounded-[0.4vmin] bg-void-2">
             <Stripes />
           </div>
 
@@ -218,27 +263,30 @@ function Slate({ copy, progress }: { copy: MediaSettings; progress: MotionValue<
           <div
             className="absolute inset-x-0 top-[27.5%] bottom-0 overflow-hidden rounded-[0.5vmin] px-[4%] py-[3%]"
             style={{
-              background: 'linear-gradient(168deg,#23252b 0%,#15171b 55%,#0b0c0e 100%)',
-              boxShadow: 'inset 0 0 0 0.25vmin rgba(242,241,236,0.14)',
+              // Light from the top left, as on everything else on the set.
+              background:
+                'linear-gradient(168deg, var(--color-void-3) 0%, var(--color-void-2) 55%, var(--color-void) 100%)',
+              boxShadow:
+                'inset 0 0 0 0.25vmin color-mix(in oklab, var(--color-on-void) 12%, transparent)',
             }}
           >
-            <div
-              className="grid h-full grid-cols-2 content-center gap-x-[7%] gap-y-[5%] font-mono uppercase"
-              style={{ fontSize: 'clamp(0.7rem, 2.9vmin, 1.7rem)', letterSpacing: '0.1em' }}
-            >
-              <Row label="Prod" value={copy.slateProduction} />
-              <Row label="Roll" value="A" />
-              <Row label="Scene" value="03" />
-              <Row label="Take" value="01" />
-              <Row label="Dir" value={copy.slateDirector} />
-              <Row label="Date" value={copy.yearRange} />
-              <div className="col-span-2 flex items-end justify-between pt-[1%] text-white/35">
+            <div className="grid h-full grid-cols-2 content-center gap-x-[7%] gap-y-[5%]">
+              <Row label="prod" value={copy.slateProduction} />
+              <Row label="roll" value="A" />
+              <Row label="scene" value="03" />
+              <Row label="take" value="01" />
+              <Row label="dir" value={copy.slateDirector} />
+              <Row label="date" value={copy.yearRange} />
+              <div
+                className="col-span-2 flex items-end justify-between pt-[1%] font-mono text-on-void-muted"
+                style={{ fontSize: 'clamp(0.75rem, 1.7vmin, 1.125rem)' }}
+              >
                 <span>{copy.formatLabel}</span>
-                <span className="text-signal">● {copy.recLabel}</span>
+                <span className="text-signal">{copy.recLabel}</span>
               </div>
             </div>
           </div>
-      </motion.div>
+        </motion.div>
       </motion.div>
     </>
   )
